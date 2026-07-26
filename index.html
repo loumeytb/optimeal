@@ -127,16 +127,16 @@
             
             <form id="profile-form">
                 <div class="form-group">
-                    <label for="prof-weight">Poids (kg)</label>
-                    <input type="number" id="prof-weight" step="0.1" placeholder="ex: 70">
+                    <label for="prof-weight">Poids actuel (kg)</label>
+                    <input type="number" id="prof-weight" step="0.1" placeholder="ex: 70" required>
                 </div>
                 <div class="form-group">
                     <label for="prof-height">Taille (cm)</label>
-                    <input type="number" id="prof-height" placeholder="ex: 175">
+                    <input type="number" id="prof-height" placeholder="ex: 175" required>
                 </div>
                 <div class="form-group">
                     <label for="prof-age">Âge</label>
-                    <input type="number" id="prof-age" placeholder="ex: 20">
+                    <input type="number" id="prof-age" placeholder="ex: 20" required>
                 </div>
                 <div class="form-group">
                     <label for="prof-gender">Sexe</label>
@@ -146,22 +146,38 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="prof-activity">Niveau d'activité</label>
+                    <label for="prof-activity">Fréquence d'entraînement</label>
                     <select id="prof-activity">
-                        <option value="1.2">Sédentaire</option>
-                        <option value="1.375">Légèrement actif (1-3 fois/semaine)</option>
-                        <option value="1.55">Modérément actif (3-5 fois/semaine)</option>
-                        <option value="1.725">Très actif (6-7 fois/semaine)</option>
+                        <option value="1.15">Sédentaire (0 entraînement)</option>
+                        <option value="1.25">1 à 2 séances / semaine</option>
+                        <option value="1.35">3 à 4 séances / semaine</option>
+                        <option value="1.45">5 séances et + / semaine</option>
+                        <option value="1.6">Athlète / Métier très physique</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="prof-goal">Objectif</label>
-                    <select id="prof-goal">
-                        <option value="cut">Sèche / Perte de poids (-15%)</option>
+                    <select id="prof-goal" onchange="toggleGoalFields()">
                         <option value="maintain">Maintien</option>
-                        <option value="bulk">Prise de masse (+15%)</option>
+                        <option value="cut">Perte de poids / Sèche</option>
+                        <option value="bulk">Prise de masse</option>
                     </select>
                 </div>
+
+                <!-- Champs dynamiques pour Perte ou Prise -->
+                <div id="goal-custom-container" style="display: none; background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label for="prof-target-weight">Poids Cible (kg)</label>
+                        <input type="number" id="prof-target-weight" step="0.1" placeholder="ex: 65">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="prof-target-days">Durée (en jours)</label>
+                        <input type="number" id="prof-target-days" placeholder="ex: 60">
+                    </div>
+                </div>
+
+                <!-- Indicateur de Faisabilité / Sécurité -->
+                <div id="goal-indicator" style="display: none; margin-bottom: 15px; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; line-height: 1.4;"></div>
 
                 <button type="submit" class="btn-primary" style="margin-top:10px;">Calculer & Enregistrer les Objectifs</button>
             </form>
