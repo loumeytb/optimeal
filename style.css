@@ -1,0 +1,346 @@
+/* ========================================== */
+/* 1. VARIABLES & PALETTE DE COULEURS         */
+/* ========================================== */
+:root {
+    --bg-color: #121315;
+    --card-bg: #1E2024;
+    --border-color: #2C3036;
+    --text-primary: #FFFFFF;
+    --text-secondary: #9EA6B2;
+    
+    /* Boutons et éléments actifs */
+    --btn-blue-gray: #4A6FA5;
+    --btn-blue-gray-hover: #3B5998;
+    --danger-color: #E74C3C;
+
+    /* Couleurs distinctes pour les 5 jauges macros */
+    --color-protein: #00D2FF; /* Bleu électrique */
+    --color-carb: #FFC107;    /* Jaune profond */
+    --color-sugar: #FF9800;   /* Orange chaud */
+    --color-fat: #FF5252;     /* Rouge léger */
+    --color-fiber: #2ECC71;   /* Vert émeraude */
+}
+
+/* Reset & bases mobile */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding-bottom: 80px; /* Espace pour la navigation fixe du bas */
+    overflow-x: hidden;
+}
+
+/* ========================================== */
+/* 2. GESTION DES ONGLETS                     */
+/* ========================================== */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ========================================== */
+/* 3. DASHBOARD (COMPTEUR & CARROUSEL)        */
+/* ========================================== */
+
+/* Gros compteur calorique blanc */
+.calorie-banner {
+    text-align: center;
+    padding: 30px 15px 15px 15px;
+}
+
+.calorie-label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.calorie-number {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+.calorie-unit {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+/* Carrousel des 5 roues (3 visibles à la fois) */
+.macro-carousel-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 10px 15px;
+    scrollbar-width: none; /* Cache la barre de scroll sur Firefox */
+}
+
+.macro-carousel-container::-webkit-scrollbar {
+    display: none; /* Cache la barre de scroll sur Chrome/Safari */
+}
+
+.macro-carousel {
+    display: flex;
+    gap: 12px;
+    width: max-content;
+}
+
+.macro-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 12px;
+    width: 105px; /* Ajusté pour en afficher 3 à l'écran sur mobile */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Style des roues SVG */
+.circular-chart {
+    width: 60px;
+    height: 60px;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: var(--border-color);
+    stroke-width: 3.8;
+}
+
+.circle {
+    fill: none;
+    stroke-width: 3.8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.3s ease;
+}
+
+/* Couleurs attribuées aux jauges */
+.circle.protein { stroke: var(--color-protein); }
+.circle.carb    { stroke: var(--color-carb); }
+.circle.sugar   { stroke: var(--color-sugar); }
+.circle.fat     { stroke: var(--color-fat); }
+.circle.fiber   { stroke: var(--color-fiber); }
+
+.macro-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.macro-val {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* ========================================== */
+/* 4. LISTES & BOUTONS                        */
+/* ========================================== */
+
+.day-log-container, .profile-container {
+    padding: 20px 15px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    margin: 20px 0 10px 0;
+    color: var(--text-secondary);
+}
+
+.btn-primary {
+    width: 100%;
+    background-color: var(--btn-blue-gray);
+    color: #FFF;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary:active {
+    background-color: var(--btn-blue-gray-hover);
+}
+
+.item-list {
+    list-style: none;
+}
+
+.item-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.item-sub {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.delete-btn {
+    color: var(--danger-color);
+    font-size: 1.4rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+/* ========================================== */
+/* 5. BASE DE DONNÉES & SOUS-ONGLETS          */
+/* ========================================== */
+.bdd-subnav {
+    display: flex;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.subnav-btn {
+    flex: 1;
+    padding: 14px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+}
+
+.subnav-btn.active {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--btn-blue-gray);
+}
+
+.bdd-action-bar {
+    padding: 15px;
+}
+
+.bdd-content {
+    display: none;
+    padding: 0 15px;
+}
+
+.bdd-content.active {
+    display: block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ========================================== */
+/* 6. FORMULAIRES & MODALES (POP-UPS)        */
+/* ========================================== */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.75);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px; right: 15px;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+/* ========================================== */
+/* 7. NAVIGATION INFÉRIEURE (FIXE)            */
+/* ========================================== */
+.bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; width: 100%;
+    height: 60px;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 999;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.nav-item svg {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 2px;
+}
+
+.nav-item.active {
+    color: var(--btn-blue-gray);
+}
