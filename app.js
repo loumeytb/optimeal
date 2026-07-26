@@ -1,24 +1,24 @@
 /* ========================================== */
-/* 1. ÉTAT DE L'APPLICATION & BDD LOCALSTORAGE*/
+/* 1. ÉTAT DE L'APPLICATION & STORAGE         */
 /* ========================================== */
 
-// Structure des données de l'application
 let appState = {
     profile: JSON.parse(localStorage.getItem('opti_profile')) || {
         age: 18,
         height: 175,
         weight: 70,
-        goal: 'gain' // 'gain', 'maintain', 'loss'
+        goal: 'gain'
     },
     foodBdd: JSON.parse(localStorage.getItem('opti_foods')) || [],
     recipeBdd: JSON.parse(localStorage.getItem('opti_recipes')) || [],
     dailyLog: JSON.parse(localStorage.getItem('opti_dailyLog')) || [],
-    itemUsage: JSON.parse(localStorage.getItem('opti_usage')) || {} // Pour le tri par fréquence
+    itemUsage: JSON.parse(localStorage.getItem('opti_usage')) || {}
 };
 
-// Index / ID pour les éléments à supprimer dans la modale
 let pendingDeleteType = null;
 let pendingDeleteId = null;
+let selectedItemForAdd = null;
+let currentRecipeIngredients = [];
 
 /* ========================================== */
 /* 2. INITIALISATION & NAVIGATION             */
@@ -37,7 +37,6 @@ function initApp() {
     setupEventListeners();
 }
 
-// Navigation entre les onglets principaux (Journal / BDD / Profil)
 function switchTab(tabId, element) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
@@ -46,7 +45,6 @@ function switchTab(tabId, element) {
     if (element) element.classList.add('active');
 }
 
-// Sous-onglets de la Base de Données (Aliments / Plats)
 function switchBddSubtab(subtab) {
     const btnAliments = document.getElementById('subtab-aliments-btn');
     const btnPlats = document.getElementById('subtab-plats-btn');
@@ -72,7 +70,6 @@ function switchBddSubtab(subtab) {
     }
 }
 
-// Gestion des Modales / Pop-ups
 function openModal(modalId) {
     document.getElementById(modalId).classList.add('active');
     if (modalId === 'modalAddMeal') {
@@ -85,37 +82,30 @@ function closeModal(modalId) {
 }
 
 /* ========================================== */
-/* 3. MOTEUR DE CALCUL SCIENTIFIQUE           */
+/* 3. MOTEUR SCIENTIFIQUE (BMR & TDEE)        */
 /* ========================================== */
 
-// Formule de Mifflin-St Jeor pour le Métabolisme de Base
 function calculateTargets() {
     const { age, height, weight, goal } = appState.profile;
     
-    // BMR (Homme) = (10 x poids) + (6.25 x taille) - (5 x âge) + 5
+    // BMR (Homme) = (10 x kg) + (6.25 x cm) - (5 x ans) + 5
     let bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-    
-    // Estimation d'un niveau d'activité moyen (NAP ~ 1.55)
     let tdee = bmr * 1.55; 
 
-    // Ajustement selon l'objectif
     let targetCal = tdee;
-    if (goal === 'gain') targetCal += 300;      // Surplus de +300 kcal
-    else if (goal === 'loss') targetCal -= 400; // Déficit de -400 kcal
+    if (goal === 'gain') targetCal += 300;
+    else if (goal === 'loss') targetCal -= 400;
 
-    // Répartition recommandée des Macros
-    let proteinTarget = Math.round(weight * 2.0); // 2.0g / kg de poids
-    let fatTarget = Math.round(weight * 1.0);     // 1.0g / kg de poids
-    let fiberTarget = 30;                         // Objectif standard 30g
-    let sugarMax = Math.round((targetCal * 0.08) / 4); // < 8% du total en sucres
+    let proteinTarget = Math.round(weight * 2.0);
+    let fatTarget = Math.round(weight * 1.0);
+    let fiberTarget = 30;
+    let sugarMax = Math.round((targetCal * 0.08) / 4);
 
-    // Le reste des calories attribué aux Glucides
     let proteinCal = proteinTarget * 4;
     let fatCal = fatTarget * 9;
     let remainingCal = targetCal - (proteinCal + fatCal);
     let carbTarget = Math.max(Math.round(remainingCal / 4), 50);
 
-    // Enregistrement des objectifs calculés
     appState.targets = {
         kcal: Math.round(targetCal),
         protein: proteinTarget,
@@ -139,7 +129,7 @@ function updateTargetUI() {
 }
 
 /* ========================================== */
-/* 4. DASHBOARD & SUIVI DES MACROS            */
+/* 4. DASHBOARD & ROUES MACROS                */
 /* ========================================== */
 
 function renderDashboard() {
@@ -154,7 +144,6 @@ function renderDashboard() {
         totals.fiber += item.fiber;
     });
 
-    // Mettre à jour les chiffres affichés
     document.getElementById('calAbsorbed').textContent = Math.round(totals.kcal);
     document.getElementById('val-protein').textContent = Math.round(totals.protein);
     document.getElementById('val-carb').textContent = Math.round(totals.carb);
@@ -162,7 +151,6 @@ function renderDashboard() {
     document.getElementById('val-fat').textContent = Math.round(totals.fat);
     document.getElementById('val-fiber').textContent = Math.round(totals.fiber);
 
-    // Mettre à jour l'avancement des 5 roues (pourcentage)
     const t = appState.targets;
     updateRing('ring-protein', totals.protein, t.protein);
     updateRing('ring-carb', totals.carb, t.carb);
@@ -170,7 +158,6 @@ function renderDashboard() {
     updateRing('ring-fat', totals.fat, t.fat);
     updateRing('ring-fiber', totals.fiber, t.fiber);
 
-    // Afficher la liste des consommations du jour
     renderTodayList();
 }
 
@@ -187,7 +174,7 @@ function renderTodayList() {
     list.innerHTML = '';
 
     if (appState.dailyLog.length === 0) {
-        list.innerHTML = '<li style="color:var(--text-secondary); text-align:center; padding:15px;">Aucun aliment enregistré aujourd\'hui</li>';
+        list.innerHTML = '<li style="color:var(--text-sub); text-align:center; padding:15px; font-size:0.85rem;">Aucun aliment enregistré aujourd\'hui</li>';
         return;
     }
 
@@ -206,10 +193,9 @@ function renderTodayList() {
 }
 
 /* ========================================== */
-/* 5. GESTION DE LA BASE DE DONNÉES           */
+/* 5. BASE DE DONNÉES ALIMENTS & PLATS        */
 /* ========================================== */
 
-// Enregistrer un nouvel aliment (pour 100g)
 document.getElementById('addFoodForm').addEventListener('submit', (e) => {
     e.preventDefault();
     
@@ -219,7 +205,7 @@ document.getElementById('addFoodForm').addEventListener('submit', (e) => {
         kcal: parseFloat(document.getElementById('foodKcal').value),
         protein: parseFloat(document.getElementById('foodProtein').value),
         carb: parseFloat(document.getElementById('foodCarbs').value),
-        sugar: parseFloat(document.getElementById('foodSugar').value),
+        sugar: parseFloat(document.getElementById('foodSugar').value) || 0,
         fat: parseFloat(document.getElementById('foodFat').value),
         fiber: parseFloat(document.getElementById('foodFiber').value) || 0
     };
@@ -237,7 +223,7 @@ function renderFoodList() {
     list.innerHTML = '';
 
     if (appState.foodBdd.length === 0) {
-        list.innerHTML = '<li style="color:var(--text-secondary); text-align:center; padding:15px;">Aucun aliment en BDD</li>';
+        list.innerHTML = '<li style="color:var(--text-sub); text-align:center; padding:15px; font-size:0.85rem;">Aucun aliment en BDD</li>';
         return;
     }
 
@@ -260,7 +246,7 @@ function renderRecipeList() {
     list.innerHTML = '';
 
     if (appState.recipeBdd.length === 0) {
-        list.innerHTML = '<li style="color:var(--text-secondary); text-align:center; padding:15px;">Aucun plat composé enregistré</li>';
+        list.innerHTML = '<li style="color:var(--text-sub); text-align:center; padding:15px; font-size:0.85rem;">Aucun plat composé enregistré</li>';
         return;
     }
 
@@ -269,7 +255,7 @@ function renderRecipeList() {
         li.className = 'item-card';
         li.innerHTML = `
             <div>
-                <div class="item-title">${item.name} (Plat)</div>
+                <div class="item-title">${item.name} 🥗</div>
                 <div class="item-sub">100g = ${item.kcal} kcal | P: ${item.protein}g | G: ${item.carb}g | L: ${item.fat}g</div>
             </div>
             <button class="delete-btn" onclick="requestDelete('recipe', ${index})">&times;</button>
@@ -279,35 +265,161 @@ function renderRecipeList() {
 }
 
 /* ========================================== */
-/* 6. RECHERCHE & AJOUT DE CONSOMMATION       */
+/* 6. CRÉATION DE PLATS COMPOSÉS (RECETTES)   */
 /* ========================================== */
 
-let selectedItemForAdd = null;
+function populateRecipeFoodSelect() {
+    const select = document.getElementById('recipeSelectFood');
+    select.innerHTML = '';
+
+    if (appState.foodBdd.length === 0) {
+        select.innerHTML = '<option value="">Aucun aliment en BDD</option>';
+        return;
+    }
+
+    appState.foodBdd.forEach((item, index) => {
+        const opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = `${item.name} (${item.kcal} kcal / 100g)`;
+        select.appendChild(opt);
+    });
+}
+
+document.getElementById('btnAddIngredientToRecipe').addEventListener('click', () => {
+    const select = document.getElementById('recipeSelectFood');
+    const foodIndex = select.value;
+    const amount = parseFloat(document.getElementById('recipeFoodAmount').value);
+
+    if (foodIndex === "" || isNaN(amount) || amount <= 0) {
+        alert("Sélectionnez un aliment et entrez une quantité valide.");
+        return;
+    }
+
+    const food = appState.foodBdd[foodIndex];
+    
+    currentRecipeIngredients.push({
+        name: food.name,
+        amount: amount,
+        kcal: food.kcal,
+        protein: food.protein,
+        carb: food.carb,
+        sugar: food.sugar,
+        fat: food.fat,
+        fiber: food.fiber
+    });
+
+    document.getElementById('recipeFoodAmount').value = '';
+    renderRecipeIngredients();
+});
+
+function renderRecipeIngredients() {
+    const list = document.getElementById('recipeIngredientsList');
+    const summary = document.getElementById('recipeSummary');
+    list.innerHTML = '';
+
+    if (currentRecipeIngredients.length === 0) {
+        list.innerHTML = '<li style="color:var(--text-sub); font-size:0.85rem; text-align:center; padding:10px;">Aucun ingrédient ajouté pour l\'instant.</li>';
+        summary.innerHTML = 'Poids total : <b>0g</b><br>Pour 100g : <b>0 kcal</b> | P: <b>0g</b> | G: <b>0g</b> | L: <b>0g</b>';
+        return;
+    }
+
+    let totalWeight = 0;
+    let totals = { kcal: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
+
+    currentRecipeIngredients.forEach((ing, index) => {
+        const ratio = ing.amount / 100;
+        totalWeight += ing.amount;
+        
+        totals.kcal += ing.kcal * ratio;
+        totals.protein += ing.protein * ratio;
+        totals.carb += ing.carb * ratio;
+        totals.sugar += ing.sugar * ratio;
+        totals.fat += ing.fat * ratio;
+        totals.fiber += ing.fiber * ratio;
+
+        const li = document.createElement('li');
+        li.className = 'item-card';
+        li.style.padding = '8px 12px';
+        li.innerHTML = `
+            <div>
+                <div class="item-title" style="font-size:0.85rem;">${ing.name}</div>
+                <div class="item-sub">${ing.amount}g</div>
+            </div>
+            <button class="delete-btn" onclick="removeRecipeIngredient(${index})">&times;</button>
+        `;
+        list.appendChild(li);
+    });
+
+    const per100gRatio = 100 / totalWeight;
+    const per100g = {
+        kcal: Math.round(totals.kcal * per100gRatio),
+        protein: Math.round((totals.protein * per100gRatio) * 10) / 10,
+        carb: Math.round((totals.carb * per100gRatio) * 10) / 10,
+        sugar: Math.round((totals.sugar * per100gRatio) * 10) / 10,
+        fat: Math.round((totals.fat * per100gRatio) * 10) / 10,
+        fiber: Math.round((totals.fiber * per100gRatio) * 10) / 10
+    };
+
+    summary.innerHTML = `
+        Poids total du plat : <b>${Math.round(totalWeight)}g</b><br>
+        Pour 100g : <b>${per100g.kcal} kcal</b> | P: <b>${per100g.protein}g</b> | G: <b>${per100g.carb}g</b> | L: <b>${per100g.fat}g</b>
+    `;
+
+    window.computedRecipePer100g = per100g;
+}
+
+function removeRecipeIngredient(index) {
+    currentRecipeIngredients.splice(index, 1);
+    renderRecipeIngredients();
+}
+
+document.getElementById('btnSaveRecipe').addEventListener('click', () => {
+    const name = document.getElementById('recipeName').value.trim();
+    
+    if (!name) {
+        alert("Veuillez donner un nom à votre plat.");
+        return;
+    }
+
+    if (currentRecipeIngredients.length === 0) {
+        alert("Ajoutez au moins un ingrédient.");
+        return;
+    }
+
+    const recipe = {
+        id: Date.now(),
+        name: name,
+        ...window.computedRecipePer100g
+    };
+
+    appState.recipeBdd.push(recipe);
+    saveState('opti_recipes', appState.recipeBdd);
+
+    renderRecipeList();
+    closeModal('modalAddRecipe');
+});
+
+/* ========================================== */
+/* 7. RECHERCHE & AJOUT DE CONSOMMATION       */
+/* ========================================== */
 
 function populateMealSearchList(query = '') {
     const resultsContainer = document.getElementById('searchMealResults');
     resultsContainer.innerHTML = '';
 
-    // Combiner Aliments et Plats
     let allItems = [
         ...appState.foodBdd.map(f => ({ ...f, type: 'food' })),
         ...appState.recipeBdd.map(r => ({ ...r, type: 'recipe' }))
     ];
 
-    // Trier par fréquence d'utilisation
-    allItems.sort((a, b) => {
-        let countA = appState.itemUsage[a.name] || 0;
-        let countB = appState.itemUsage[b.name] || 0;
-        return countB - countA;
-    });
+    allItems.sort((a, b) => (appState.itemUsage[b.name] || 0) - (appState.itemUsage[a.name] || 0));
 
-    // Filtrer selon la recherche
     if (query) {
         allItems = allItems.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
     }
 
     if (allItems.length === 0) {
-        resultsContainer.innerHTML = '<li style="color:var(--text-secondary); padding:10px;">Aucun résultat. Ajoutez des aliments dans la BDD.</li>';
+        resultsContainer.innerHTML = '<li style="color:var(--text-sub); padding:10px; font-size:0.85rem;">Aucun résultat trouvé.</li>';
         return;
     }
 
@@ -332,7 +444,6 @@ function selectItemToAdd(item) {
     document.getElementById('portionSelector').classList.remove('hidden');
 }
 
-// Validation de l'ajout au Journal quotidien
 document.getElementById('btnConfirmAddMeal').addEventListener('click', () => {
     if (!selectedItemForAdd) return;
 
@@ -353,25 +464,22 @@ document.getElementById('btnConfirmAddMeal').addEventListener('click', () => {
     appState.dailyLog.push(loggedItem);
     saveState('opti_dailyLog', appState.dailyLog);
 
-    // Mettre à jour la fréquence d'utilisation
     appState.itemUsage[selectedItemForAdd.name] = (appState.itemUsage[selectedItemForAdd.name] || 0) + 1;
     saveState('opti_usage', appState.itemUsage);
 
     renderDashboard();
     closeModal('modalAddMeal');
 
-    // Réinitialiser la sélection
     selectedItemForAdd = null;
     document.getElementById('portionSelector').classList.add('hidden');
 });
 
-// Écouteur de recherche rapide
 document.getElementById('searchMealInput').addEventListener('input', (e) => {
     populateMealSearchList(e.target.value);
 });
 
 /* ========================================== */
-/* 7. PROFIL ET SAUVEGARDES                   */
+/* 8. PROFIL, SUPPRESSIONS & EVENT LISTENERS  */
 /* ========================================== */
 
 function loadProfileValues() {
@@ -395,10 +503,6 @@ document.getElementById('profileForm').addEventListener('submit', (e) => {
     renderDashboard();
     alert('Profil et objectifs mis à jour !');
 });
-
-/* ========================================== */
-/* 8. POP-UP DE SUPPRESSION & HELPERS        */
-/* ========================================== */
 
 function requestDelete(type, index) {
     pendingDeleteType = type;
@@ -427,6 +531,15 @@ document.getElementById('btnConfirmDeleteAction').addEventListener('click', () =
 function setupEventListeners() {
     document.getElementById('btnOpenAddMeal').addEventListener('click', () => {
         openModal('modalAddMeal');
+    });
+
+    document.getElementById('btnAddRecipe').addEventListener('click', () => {
+        currentRecipeIngredients = [];
+        document.getElementById('recipeName').value = '';
+        document.getElementById('recipeFoodAmount').value = '';
+        populateRecipeFoodSelect();
+        renderRecipeIngredients();
+        openModal('modalAddRecipe');
     });
 }
 
