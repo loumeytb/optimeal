@@ -1,548 +1,377 @@
-/* ========================================== */
-/* 1. ÉTAT DE L'APPLICATION & STORAGE         */
-/* ========================================== */
-
-let appState = {
-    profile: JSON.parse(localStorage.getItem('opti_profile')) || {
-        age: 18,
-        height: 175,
-        weight: 70,
-        goal: 'gain'
-    },
-    foodBdd: JSON.parse(localStorage.getItem('opti_foods')) || [],
-    recipeBdd: JSON.parse(localStorage.getItem('opti_recipes')) || [],
-    dailyLog: JSON.parse(localStorage.getItem('opti_dailyLog')) || [],
-    itemUsage: JSON.parse(localStorage.getItem('opti_usage')) || {}
+// ==========================================
+// 1. ÉTAT DE L'APPLICATION (STORAGE)
+// ==========================================
+let state = {
+    goals: { calories: 2000, protein: 150, carb: 250, sugar: 50, fat: 70, fiber: 30 },
+    profile: { weight: '', height: '', age: '', gender: 'male', activity: '1.2', goal: 'maintain' },
+    foods: [],
+    recipes: [],
+    logs: [] // Liste des consommations de la journée
 };
 
-let pendingDeleteType = null;
-let pendingDeleteId = null;
-let selectedItemForAdd = null;
-let currentRecipeIngredients = [];
-
-/* ========================================== */
-/* 2. INITIALISATION & NAVIGATION             */
-/* ========================================== */
-
+// Initialisation au chargement
 document.addEventListener('DOMContentLoaded', () => {
-    initApp();
+    loadData();
+    renderAll();
+    setupEventListeners();
 });
 
-function initApp() {
-    loadProfileValues();
-    calculateTargets();
-    renderDashboard();
-    renderFoodList();
-    renderRecipeList();
-    setupEventListeners();
+function loadData() {
+    const saved = localStorage.getItem('nutrition_data');
+    if (saved) {
+        state = JSON.parse(saved);
+    }
 }
 
-function switchTab(tabId, element) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.classList.remove('active'));
-    
+function saveData() {
+    localStorage.setItem('nutrition_data', JSON.stringify(state));
+    renderAll();
+}
+
+// ==========================================
+// 2. GESTION DES NAVIGATION / ONGLETS
+// ==========================================
+function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
+
     document.getElementById(tabId).classList.add('active');
-    if (element) element.classList.add('active');
+    btnElement.classList.add('active');
 }
 
-function switchBddSubtab(subtab) {
-    const btnAliments = document.getElementById('subtab-aliments-btn');
-    const btnPlats = document.getElementById('subtab-plats-btn');
-    const contentAliments = document.getElementById('subtab-aliments');
-    const contentPlats = document.getElementById('subtab-plats');
-    const btnAddFood = document.getElementById('btnAddFood');
-    const btnAddRecipe = document.getElementById('btnAddRecipe');
+function switchSubTab(subTabName) {
+    document.querySelectorAll('.subnav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.bdd-content').forEach(c => c.classList.remove('active'));
 
-    if (subtab === 'aliments') {
-        btnAliments.classList.add('active');
-        btnPlats.classList.remove('active');
-        contentAliments.classList.add('active');
-        contentPlats.classList.remove('active');
-        btnAddFood.classList.remove('hidden');
-        btnAddRecipe.classList.add('hidden');
+    if (subTabName === 'aliments') {
+        document.querySelectorAll('.subnav-btn')[0].classList.add('active');
+        document.getElementById('bdd-aliments').classList.add('active');
     } else {
-        btnPlats.classList.add('active');
-        btnAliments.classList.remove('active');
-        contentPlats.classList.add('active');
-        contentAliments.classList.remove('active');
-        btnAddRecipe.classList.remove('hidden');
-        btnAddFood.classList.add('hidden');
+        document.querySelectorAll('.subnav-btn')[1].classList.add('active');
+        document.getElementById('bdd-plats').classList.add('active');
     }
 }
 
 function openModal(modalId) {
+    if (modalId === 'modal-log') populateLogSelect();
+    if (modalId === 'modal-recipe') prepareRecipeForm();
     document.getElementById(modalId).classList.add('active');
-    if (modalId === 'modalAddMeal') {
-        populateMealSearchList();
-    }
 }
 
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
 
-/* ========================================== */
-/* 3. MOTEUR SCIENTIFIQUE (BMR & TDEE)        */
-/* ========================================== */
+// ==========================================
+// 3. LOGIQUE & CALCULS
+// ==========================================
 
-function calculateTargets() {
-    const { age, height, weight, goal } = appState.profile;
-    
-    // BMR (Homme) = (10 x kg) + (6.25 x cm) - (5 x ans) + 5
-    let bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-    let tdee = bmr * 1.55; 
+// Calcul du Total Journalier
+function calculateDailyTotals() {
+    let totals = { calories: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
 
-    let targetCal = tdee;
-    if (goal === 'gain') targetCal += 300;
-    else if (goal === 'loss') targetCal -= 400;
+    state.logs.forEach(log => {
+        let item = state.foods.find(f => f.id === log.itemId) || state.recipes.find(r => r.id === log.itemId);
+        if (item) {
+            let ratio = log.amount / 100;
+            totals.calories += (item.calories || 0) * ratio;
+            totals.protein += (item.protein || 0) * ratio;
+            totals.carb += (item.carb || 0) * ratio;
+            totals.sugar += (item.sugar || 0) * ratio;
+            totals.fat += (item.fat || 0) * ratio;
+            totals.fiber += (item.fiber || 0) * ratio;
+        }
+    });
 
-    let proteinTarget = Math.round(weight * 2.0);
-    let fatTarget = Math.round(weight * 1.0);
-    let fiberTarget = 30;
-    let sugarMax = Math.round((targetCal * 0.08) / 4);
-
-    let proteinCal = proteinTarget * 4;
-    let fatCal = fatTarget * 9;
-    let remainingCal = targetCal - (proteinCal + fatCal);
-    let carbTarget = Math.max(Math.round(remainingCal / 4), 50);
-
-    appState.targets = {
-        kcal: Math.round(targetCal),
-        protein: proteinTarget,
-        carb: carbTarget,
-        sugar: sugarMax,
-        fat: fatTarget,
-        fiber: fiberTarget
-    };
-
-    updateTargetUI();
+    return totals;
 }
 
-function updateTargetUI() {
-    const t = appState.targets;
-    document.getElementById('calTarget').textContent = t.kcal;
-    document.getElementById('target-protein').textContent = t.protein;
-    document.getElementById('target-carb').textContent = t.carb;
-    document.getElementById('target-sugar').textContent = t.sugar;
-    document.getElementById('target-fat').textContent = t.fat;
-    document.getElementById('target-fiber').textContent = t.fiber;
-}
-
-/* ========================================== */
-/* 4. DASHBOARD & ROUES MACROS                */
-/* ========================================== */
-
+// Rendu Graphique (Comptoirs et Roues)
 function renderDashboard() {
-    let totals = { kcal: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
+    const totals = calculateDailyTotals();
 
-    appState.dailyLog.forEach(item => {
-        totals.kcal += item.kcal;
-        totals.protein += item.protein;
-        totals.carb += item.carb;
-        totals.sugar += item.sugar;
-        totals.fat += item.fat;
-        totals.fiber += item.fiber;
-    });
+    // Affichage des Calories
+    document.getElementById('calories-val').textContent = Math.round(totals.calories);
+    document.getElementById('calories-goal').textContent = Math.round(state.goals.calories);
 
-    document.getElementById('calAbsorbed').textContent = Math.round(totals.kcal);
-    document.getElementById('val-protein').textContent = Math.round(totals.protein);
-    document.getElementById('val-carb').textContent = Math.round(totals.carb);
-    document.getElementById('val-sugar').textContent = Math.round(totals.sugar);
-    document.getElementById('val-fat').textContent = Math.round(totals.fat);
-    document.getElementById('val-fiber').textContent = Math.round(totals.fiber);
+    // Mettre à jour les 5 roues
+    updateMacroCard('protein', totals.protein, state.goals.protein);
+    updateMacroCard('carb', totals.carb, state.goals.carb);
+    updateMacroCard('sugar', totals.sugar, state.goals.sugar);
+    updateMacroCard('fat', totals.fat, state.goals.fat);
+    updateMacroCard('fiber', totals.fiber, state.goals.fiber);
 
-    const t = appState.targets;
-    updateRing('ring-protein', totals.protein, t.protein);
-    updateRing('ring-carb', totals.carb, t.carb);
-    updateRing('ring-sugar', totals.sugar, t.sugar);
-    updateRing('ring-fat', totals.fat, t.fat);
-    updateRing('ring-fiber', totals.fiber, t.fiber);
+    // Rendu de la liste du journal
+    const logList = document.getElementById('log-list');
+    logList.innerHTML = '';
+    state.logs.forEach((log, index) => {
+        let item = state.foods.find(f => f.id === log.itemId) || state.recipes.find(r => r.id === log.itemId);
+        if (!item) return;
 
-    renderTodayList();
-}
+        let ratio = log.amount / 100;
+        let cals = Math.round(item.calories * ratio);
 
-function updateRing(ringId, current, target) {
-    const percent = Math.min(Math.round((current / target) * 100), 100);
-    const ring = document.getElementById(ringId);
-    if (ring) {
-        ring.setAttribute('stroke-dasharray', `${percent}, 100`);
-    }
-}
-
-function renderTodayList() {
-    const list = document.getElementById('todayMealList');
-    list.innerHTML = '';
-
-    if (appState.dailyLog.length === 0) {
-        list.innerHTML = '<li style="color:var(--text-sub); text-align:center; padding:15px; font-size:0.85rem;">Aucun aliment enregistré aujourd\'hui</li>';
-        return;
-    }
-
-    appState.dailyLog.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.className = 'item-card';
-        li.innerHTML = `
-            <div>
-                <div class="item-title">${item.name} (${item.amount}g)</div>
-                <div class="item-sub">${Math.round(item.kcal)} kcal | P: ${Math.round(item.protein)}g | G: ${Math.round(item.carb)}g | L: ${Math.round(item.fat)}g</div>
-            </div>
-            <button class="delete-btn" onclick="requestDelete('log', ${index})">&times;</button>
-        `;
-        list.appendChild(li);
-    });
-}
-
-/* ========================================== */
-/* 5. BASE DE DONNÉES ALIMENTS & PLATS        */
-/* ========================================== */
-
-document.getElementById('addFoodForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const newFood = {
-        id: Date.now(),
-        name: document.getElementById('foodName').value,
-        kcal: parseFloat(document.getElementById('foodKcal').value),
-        protein: parseFloat(document.getElementById('foodProtein').value),
-        carb: parseFloat(document.getElementById('foodCarbs').value),
-        sugar: parseFloat(document.getElementById('foodSugar').value) || 0,
-        fat: parseFloat(document.getElementById('foodFat').value),
-        fiber: parseFloat(document.getElementById('foodFiber').value) || 0
-    };
-
-    appState.foodBdd.push(newFood);
-    saveState('opti_foods', appState.foodBdd);
-    
-    renderFoodList();
-    closeModal('modalAddFood');
-    e.target.reset();
-});
-
-function renderFoodList() {
-    const list = document.getElementById('foodBddList');
-    list.innerHTML = '';
-
-    if (appState.foodBdd.length === 0) {
-        list.innerHTML = '<li style="color:var(--text-sub); text-align:center; padding:15px; font-size:0.85rem;">Aucun aliment en BDD</li>';
-        return;
-    }
-
-    appState.foodBdd.forEach((item, index) => {
-        const li = document.createElement('li');
+        let li = document.createElement('li');
         li.className = 'item-card';
         li.innerHTML = `
             <div>
                 <div class="item-title">${item.name}</div>
-                <div class="item-sub">100g = ${item.kcal} kcal | P: ${item.protein}g | G: ${item.carb}g | L: ${item.fat}g</div>
+                <div class="item-sub">${log.amount}g/ml • ${cals} kcal</div>
             </div>
-            <button class="delete-btn" onclick="requestDelete('food', ${index})">&times;</button>
+            <button class="delete-btn" onclick="deleteLog(${index})">&times;</button>
         `;
-        list.appendChild(li);
+        logList.appendChild(li);
     });
 }
 
-function renderRecipeList() {
-    const list = document.getElementById('recipeBddList');
-    list.innerHTML = '';
+function updateMacroCard(type, value, goal) {
+    document.getElementById(`val-${type}`).textContent = Math.round(value);
+    document.getElementById(`goal-${type}`).textContent = Math.round(goal);
 
-    if (appState.recipeBdd.length === 0) {
-        list.innerHTML = '<li style="color:var(--text-sub); text-align:center; padding:15px; font-size:0.85rem;">Aucun plat composé enregistré</li>';
-        return;
+    let percent = goal > 0 ? Math.min(100, Math.round((value / goal) * 100)) : 0;
+    let circle = document.getElementById(`circle-${type}`);
+    if (circle) {
+        circle.setAttribute('stroke-dasharray', `${percent}, 100`);
     }
+}
 
-    appState.recipeBdd.forEach((item, index) => {
-        const li = document.createElement('li');
+// Rendu BDD (Aliments & Plats)
+function renderBDD() {
+    const foodList = document.getElementById('food-list');
+    foodList.innerHTML = '';
+    state.foods.forEach(food => {
+        let li = document.createElement('li');
         li.className = 'item-card';
         li.innerHTML = `
             <div>
-                <div class="item-title">${item.name} 🥗</div>
-                <div class="item-sub">100g = ${item.kcal} kcal | P: ${item.protein}g | G: ${item.carb}g | L: ${item.fat}g</div>
+                <div class="item-title">${food.name}</div>
+                <div class="item-sub">100g • ${food.calories} kcal (P: ${food.protein}g | G: ${food.carb}g | L: ${food.fat}g)</div>
             </div>
-            <button class="delete-btn" onclick="requestDelete('recipe', ${index})">&times;</button>
+            <button class="delete-btn" onclick="deleteFood('${food.id}')">&times;</button>
         `;
-        list.appendChild(li);
+        foodList.appendChild(li);
+    });
+
+    const recipeList = document.getElementById('recipe-list');
+    recipeList.innerHTML = '';
+    state.recipes.forEach(recipe => {
+        let li = document.createElement('li');
+        li.className = 'item-card';
+        li.innerHTML = `
+            <div>
+                <div class="item-title">${recipe.name}</div>
+                <div class="item-sub">100g du plat • ${recipe.calories} kcal</div>
+            </div>
+            <button class="delete-btn" onclick="deleteRecipe('${recipe.id}')">&times;</button>
+        `;
+        recipeList.appendChild(li);
     });
 }
 
-/* ========================================== */
-/* 6. CRÉATION DE PLATS COMPOSÉS (RECETTES)   */
-/* ========================================== */
+// Rendu du Profil
+function renderProfile() {
+    if (!state.profile) return;
+    document.getElementById('prof-weight').value = state.profile.weight || '';
+    document.getElementById('prof-height').value = state.profile.height || '';
+    document.getElementById('prof-age').value = state.profile.age || '';
+    document.getElementById('prof-gender').value = state.profile.gender || 'male';
+    document.getElementById('prof-activity').value = state.profile.activity || '1.2';
+    document.getElementById('prof-goal').value = state.profile.goal || 'maintain';
+}
 
-function populateRecipeFoodSelect() {
-    const select = document.getElementById('recipeSelectFood');
+function renderAll() {
+    renderDashboard();
+    renderBDD();
+    renderProfile();
+}
+
+// ==========================================
+// 4. ÉVÉNEMENTS & FORMULAIRES
+// ==========================================
+function setupEventListeners() {
+    // Profil Form
+    document.getElementById('profile-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const weight = parseFloat(document.getElementById('prof-weight').value);
+        const height = parseFloat(document.getElementById('prof-height').value);
+        const age = parseFloat(document.getElementById('prof-age').value);
+        const gender = document.getElementById('prof-gender').value;
+        const activity = parseFloat(document.getElementById('prof-activity').value);
+        const goal = document.getElementById('prof-goal').value;
+
+        state.profile = { weight, height, age, gender, activity, goal };
+
+        // Calcul BMR (Mifflin-St Jeor)
+        if (weight && height && age) {
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+            bmr += (gender === 'male') ? 5 : -161;
+            let tdee = bmr * activity;
+
+            if (goal === 'cut') tdee *= 0.85;
+            if (goal === 'bulk') tdee *= 1.15;
+
+            // Répartition conseillée des Macros
+            state.goals.calories = Math.round(tdee);
+            state.goals.protein = Math.round(weight * 2.0); // 2g/kg
+            state.goals.fat = Math.round(weight * 0.9);     // 0.9g/kg
+            
+            // Le reste en glucides
+            let remainingCal = state.goals.calories - (state.goals.protein * 4) - (state.goals.fat * 9);
+            state.goals.carb = Math.max(0, Math.round(remainingCal / 4));
+            state.goals.sugar = Math.round(state.goals.calories * 0.10 / 4); // max 10% des cals
+            state.goals.fiber = 30; // standard
+        }
+
+        saveData();
+        alert('Profil et objectifs mis à jour !');
+    });
+
+    // Food Form
+    document.getElementById('food-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const food = {
+            id: 'f_' + Date.now(),
+            name: document.getElementById('food-name').value,
+            calories: parseFloat(document.getElementById('food-cal').value) || 0,
+            protein: parseFloat(document.getElementById('food-prot').value) || 0,
+            carb: parseFloat(document.getElementById('food-carb').value) || 0,
+            sugar: parseFloat(document.getElementById('food-sug').value) || 0,
+            fat: parseFloat(document.getElementById('food-fat').value) || 0,
+            fiber: parseFloat(document.getElementById('food-fib').value) || 0
+        };
+
+        state.foods.push(food);
+        saveData();
+        closeModal('modal-food');
+        document.getElementById('food-form').reset();
+    });
+
+    // Log Form
+    document.getElementById('log-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const itemId = document.getElementById('log-select').value;
+        const amount = parseFloat(document.getElementById('log-amount').value) || 0;
+
+        if (itemId && amount > 0) {
+            state.logs.push({ itemId, amount });
+            saveData();
+            closeModal('modal-log');
+        }
+    });
+
+    // Recipe Form
+    document.getElementById('recipe-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('recipe-name').value;
+        const rows = document.querySelectorAll('.recipe-row');
+
+        let totalWeight = 0;
+        let totals = { calories: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
+
+        rows.forEach(row => {
+            let foodId = row.querySelector('.recipe-food-select').value;
+            let weight = parseFloat(row.querySelector('.recipe-food-weight').value) || 0;
+            let food = state.foods.find(f => f.id === foodId);
+
+            if (food && weight > 0) {
+                totalWeight += weight;
+                let ratio = weight / 100;
+                totals.calories += food.calories * ratio;
+                totals.protein += food.protein * ratio;
+                totals.carb += food.carb * ratio;
+                totals.sugar += food.sugar * ratio;
+                totals.fat += food.fat * ratio;
+                totals.fiber += food.fiber * ratio;
+            }
+        });
+
+        if (totalWeight === 0) return;
+
+        // Normalisation pour 100g du plat final
+        let ratio100g = 100 / totalWeight;
+        const recipe = {
+            id: 'r_' + Date.now(),
+            name: name,
+            calories: Math.round(totals.calories * ratio100g),
+            protein: Math.round(totals.protein * ratio100g * 10) / 10,
+            carb: Math.round(totals.carb * ratio100g * 10) / 10,
+            sugar: Math.round(totals.sugar * ratio100g * 10) / 10,
+            fat: Math.round(totals.fat * ratio100g * 10) / 10,
+            fiber: Math.round(totals.fiber * ratio100g * 10) / 10
+        };
+
+        state.recipes.push(recipe);
+        saveData();
+        closeModal('modal-recipe');
+        document.getElementById('recipe-form').reset();
+    });
+}
+
+// ==========================================
+// 5. HELPER FUNCTIONS
+// ==========================================
+function populateLogSelect() {
+    const select = document.getElementById('log-select');
     select.innerHTML = '';
 
-    if (appState.foodBdd.length === 0) {
-        select.innerHTML = '<option value="">Aucun aliment en BDD</option>';
-        return;
+    if (state.foods.length > 0) {
+        let group = document.createElement('optgroup');
+        group.label = 'Aliments';
+        state.foods.forEach(f => {
+            group.innerHTML += `<option value="${f.id}">${f.name} (${f.calories} kcal/100g)</option>`;
+        });
+        select.appendChild(group);
     }
 
-    appState.foodBdd.forEach((item, index) => {
-        const opt = document.createElement('option');
-        opt.value = index;
-        opt.textContent = `${item.name} (${item.kcal} kcal / 100g)`;
-        select.appendChild(opt);
-    });
+    if (state.recipes.length > 0) {
+        let group = document.createElement('optgroup');
+        group.label = 'Plats';
+        state.recipes.forEach(r => {
+            group.innerHTML += `<option value="${r.id}">${r.name} (${r.calories} kcal/100g)</option>`;
+        });
+        select.appendChild(group);
+    }
 }
 
-document.getElementById('btnAddIngredientToRecipe').addEventListener('click', () => {
-    const select = document.getElementById('recipeSelectFood');
-    const foodIndex = select.value;
-    const amount = parseFloat(document.getElementById('recipeFoodAmount').value);
+function prepareRecipeForm() {
+    const container = document.getElementById('recipe-ingredients-container');
+    container.innerHTML = '';
+    addIngredientRow();
+}
 
-    if (foodIndex === "" || isNaN(amount) || amount <= 0) {
-        alert("Sélectionnez un aliment et entrez une quantité valide.");
-        return;
-    }
+function addIngredientRow() {
+    const container = document.getElementById('recipe-ingredients-container');
+    const div = document.createElement('div');
+    div.className = 'recipe-row';
+    div.style.display = 'flex';
+    div.style.gap = '8px';
+    div.style.marginBottom = '8px';
 
-    const food = appState.foodBdd[foodIndex];
-    
-    currentRecipeIngredients.push({
-        name: food.name,
-        amount: amount,
-        kcal: food.kcal,
-        protein: food.protein,
-        carb: food.carb,
-        sugar: food.sugar,
-        fat: food.fat,
-        fiber: food.fiber
+    let selectHTML = '<select class="recipe-food-select" style="flex:2;">';
+    state.foods.forEach(f => {
+        selectHTML += `<option value="${f.id}">${f.name}</option>`;
     });
+    selectHTML += '</select>';
 
-    document.getElementById('recipeFoodAmount').value = '';
-    renderRecipeIngredients();
-});
-
-function renderRecipeIngredients() {
-    const list = document.getElementById('recipeIngredientsList');
-    const summary = document.getElementById('recipeSummary');
-    list.innerHTML = '';
-
-    if (currentRecipeIngredients.length === 0) {
-        list.innerHTML = '<li style="color:var(--text-sub); font-size:0.85rem; text-align:center; padding:10px;">Aucun ingrédient ajouté pour l\'instant.</li>';
-        summary.innerHTML = 'Poids total : <b>0g</b><br>Pour 100g : <b>0 kcal</b> | P: <b>0g</b> | G: <b>0g</b> | L: <b>0g</b>';
-        return;
-    }
-
-    let totalWeight = 0;
-    let totals = { kcal: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
-
-    currentRecipeIngredients.forEach((ing, index) => {
-        const ratio = ing.amount / 100;
-        totalWeight += ing.amount;
-        
-        totals.kcal += ing.kcal * ratio;
-        totals.protein += ing.protein * ratio;
-        totals.carb += ing.carb * ratio;
-        totals.sugar += ing.sugar * ratio;
-        totals.fat += ing.fat * ratio;
-        totals.fiber += ing.fiber * ratio;
-
-        const li = document.createElement('li');
-        li.className = 'item-card';
-        li.style.padding = '8px 12px';
-        li.innerHTML = `
-            <div>
-                <div class="item-title" style="font-size:0.85rem;">${ing.name}</div>
-                <div class="item-sub">${ing.amount}g</div>
-            </div>
-            <button class="delete-btn" onclick="removeRecipeIngredient(${index})">&times;</button>
-        `;
-        list.appendChild(li);
-    });
-
-    const per100gRatio = 100 / totalWeight;
-    const per100g = {
-        kcal: Math.round(totals.kcal * per100gRatio),
-        protein: Math.round((totals.protein * per100gRatio) * 10) / 10,
-        carb: Math.round((totals.carb * per100gRatio) * 10) / 10,
-        sugar: Math.round((totals.sugar * per100gRatio) * 10) / 10,
-        fat: Math.round((totals.fat * per100gRatio) * 10) / 10,
-        fiber: Math.round((totals.fiber * per100gRatio) * 10) / 10
-    };
-
-    summary.innerHTML = `
-        Poids total du plat : <b>${Math.round(totalWeight)}g</b><br>
-        Pour 100g : <b>${per100g.kcal} kcal</b> | P: <b>${per100g.protein}g</b> | G: <b>${per100g.carb}g</b> | L: <b>${per100g.fat}g</b>
+    div.innerHTML = `
+        ${selectHTML}
+        <input type="number" class="recipe-food-weight" placeholder="g" value="100" style="flex:1;">
+        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--danger-color); font-size:1.2rem;">&times;</button>
     `;
-
-    window.computedRecipePer100g = per100g;
+    container.appendChild(div);
 }
 
-function removeRecipeIngredient(index) {
-    currentRecipeIngredients.splice(index, 1);
-    renderRecipeIngredients();
+function deleteLog(index) {
+    state.logs.splice(index, 1);
+    saveData();
 }
 
-document.getElementById('btnSaveRecipe').addEventListener('click', () => {
-    const name = document.getElementById('recipeName').value.trim();
-    
-    if (!name) {
-        alert("Veuillez donner un nom à votre plat.");
-        return;
-    }
-
-    if (currentRecipeIngredients.length === 0) {
-        alert("Ajoutez au moins un ingrédient.");
-        return;
-    }
-
-    const recipe = {
-        id: Date.now(),
-        name: name,
-        ...window.computedRecipePer100g
-    };
-
-    appState.recipeBdd.push(recipe);
-    saveState('opti_recipes', appState.recipeBdd);
-
-    renderRecipeList();
-    closeModal('modalAddRecipe');
-});
-
-/* ========================================== */
-/* 7. RECHERCHE & AJOUT DE CONSOMMATION       */
-/* ========================================== */
-
-function populateMealSearchList(query = '') {
-    const resultsContainer = document.getElementById('searchMealResults');
-    resultsContainer.innerHTML = '';
-
-    let allItems = [
-        ...appState.foodBdd.map(f => ({ ...f, type: 'food' })),
-        ...appState.recipeBdd.map(r => ({ ...r, type: 'recipe' }))
-    ];
-
-    allItems.sort((a, b) => (appState.itemUsage[b.name] || 0) - (appState.itemUsage[a.name] || 0));
-
-    if (query) {
-        allItems = allItems.filter(item => item.name.toLowerCase().includes(query.toLowerCase()));
-    }
-
-    if (allItems.length === 0) {
-        resultsContainer.innerHTML = '<li style="color:var(--text-sub); padding:10px; font-size:0.85rem;">Aucun résultat trouvé.</li>';
-        return;
-    }
-
-    allItems.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'item-card';
-        li.style.cursor = 'pointer';
-        li.innerHTML = `
-            <div>
-                <div class="item-title">${item.name} ${item.type === 'recipe' ? '🥗' : ''}</div>
-                <div class="item-sub">100g = ${item.kcal} kcal | P:${item.protein}g G:${item.carb}g L:${item.fat}g</div>
-            </div>
-        `;
-        li.onclick = () => selectItemToAdd(item);
-        resultsContainer.appendChild(li);
-    });
+function deleteFood(id) {
+    state.foods = state.foods.filter(f => f.id !== id);
+    saveData();
 }
 
-function selectItemToAdd(item) {
-    selectedItemForAdd = item;
-    document.getElementById('selectedItemName').textContent = item.name;
-    document.getElementById('portionSelector').classList.remove('hidden');
-}
-
-document.getElementById('btnConfirmAddMeal').addEventListener('click', () => {
-    if (!selectedItemForAdd) return;
-
-    const amount = parseFloat(document.getElementById('consumedAmount').value) || 100;
-    const ratio = amount / 100;
-
-    const loggedItem = {
-        name: selectedItemForAdd.name,
-        amount: amount,
-        kcal: selectedItemForAdd.kcal * ratio,
-        protein: selectedItemForAdd.protein * ratio,
-        carb: selectedItemForAdd.carb * ratio,
-        sugar: selectedItemForAdd.sugar * ratio,
-        fat: selectedItemForAdd.fat * ratio,
-        fiber: selectedItemForAdd.fiber * ratio
-    };
-
-    appState.dailyLog.push(loggedItem);
-    saveState('opti_dailyLog', appState.dailyLog);
-
-    appState.itemUsage[selectedItemForAdd.name] = (appState.itemUsage[selectedItemForAdd.name] || 0) + 1;
-    saveState('opti_usage', appState.itemUsage);
-
-    renderDashboard();
-    closeModal('modalAddMeal');
-
-    selectedItemForAdd = null;
-    document.getElementById('portionSelector').classList.add('hidden');
-});
-
-document.getElementById('searchMealInput').addEventListener('input', (e) => {
-    populateMealSearchList(e.target.value);
-});
-
-/* ========================================== */
-/* 8. PROFIL, SUPPRESSIONS & EVENT LISTENERS  */
-/* ========================================== */
-
-function loadProfileValues() {
-    document.getElementById('profAge').value = appState.profile.age;
-    document.getElementById('profHeight').value = appState.profile.height;
-    document.getElementById('profWeight').value = appState.profile.weight;
-    document.getElementById('profGoal').value = appState.profile.goal;
-}
-
-document.getElementById('profileForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    appState.profile = {
-        age: parseInt(document.getElementById('profAge').value),
-        height: parseInt(document.getElementById('profHeight').value),
-        weight: parseFloat(document.getElementById('profWeight').value),
-        goal: document.getElementById('profGoal').value
-    };
-
-    saveState('opti_profile', appState.profile);
-    calculateTargets();
-    renderDashboard();
-    alert('Profil et objectifs mis à jour !');
-});
-
-function requestDelete(type, index) {
-    pendingDeleteType = type;
-    pendingDeleteId = index;
-    openModal('modalConfirmDelete');
-}
-
-document.getElementById('btnConfirmDeleteAction').addEventListener('click', () => {
-    if (pendingDeleteType === 'log') {
-        appState.dailyLog.splice(pendingDeleteId, 1);
-        saveState('opti_dailyLog', appState.dailyLog);
-        renderDashboard();
-    } else if (pendingDeleteType === 'food') {
-        appState.foodBdd.splice(pendingDeleteId, 1);
-        saveState('opti_foods', appState.foodBdd);
-        renderFoodList();
-    } else if (pendingDeleteType === 'recipe') {
-        appState.recipeBdd.splice(pendingDeleteId, 1);
-        saveState('opti_recipes', appState.recipeBdd);
-        renderRecipeList();
-    }
-
-    closeModal('modalConfirmDelete');
-});
-
-function setupEventListeners() {
-    document.getElementById('btnOpenAddMeal').addEventListener('click', () => {
-        openModal('modalAddMeal');
-    });
-
-    document.getElementById('btnAddRecipe').addEventListener('click', () => {
-        currentRecipeIngredients = [];
-        document.getElementById('recipeName').value = '';
-        document.getElementById('recipeFoodAmount').value = '';
-        populateRecipeFoodSelect();
-        renderRecipeIngredients();
-        openModal('modalAddRecipe');
-    });
-}
-
-function saveState(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
+function deleteRecipe(id) {
+    state.recipes = state.recipes.filter(r => r.id !== id);
+    saveData();
 }
