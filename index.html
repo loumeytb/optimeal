@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>OptiMeal</title>
+    
+    <!-- Fichiers CSS et PWA -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#1A1C1E">
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- SECTION 1 : DASHBOARD (ÉCRAN PRINCIPAL)    -->
+    <!-- ========================================== -->
+    <main id="tab-dashboard" class="tab-content active">
+        
+        <!-- Gros compteur calorique principal -->
+        <section class="calorie-banner">
+            <span class="calorie-label">Calories consommées</span>
+            <div class="calorie-number">
+                <span id="calAbsorbed">0</span> / <span id="calTarget">2500</span>
+                <span class="calorie-unit">kcal</span>
+            </div>
+        </section>
+
+        <!-- Carrousel horizontal des 5 jauges / roues de macros -->
+        <section class="macro-carousel-container">
+            <div class="macro-carousel">
+                
+                <!-- 1. Protéines (Bleu Électrique) -->
+                <div class="macro-card">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="ring-protein" class="circle protein" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span class="macro-name">Protéines</span>
+                    <span class="macro-val"><span id="val-protein">0</span> / <span id="target-protein">150</span>g</span>
+                </div>
+
+                <!-- 2. Glucides (Jaune Profond) -->
+                <div class="macro-card">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="ring-carb" class="circle carb" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span class="macro-name">Glucides</span>
+                    <span class="macro-val"><span id="val-carb">0</span> / <span id="target-carb">300</span>g</span>
+                </div>
+
+                <!-- 3. Sucres (Orange Chaud) -->
+                <div class="macro-card">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="ring-sugar" class="circle sugar" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span class="macro-name">Sucres</span>
+                    <span class="macro-val"><span id="val-sugar">0</span> / <span id="target-sugar">45</span>g</span>
+                </div>
+
+                <!-- 4. Lipides (Rouge Léger) -->
+                <div class="macro-card">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="ring-fat" class="circle fat" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span class="macro-name">Lipides</span>
+                    <span class="macro-val"><span id="val-fat">0</span> / <span id="target-fat">70</span>g</span>
+                </div>
+
+                <!-- 5. Fibres (Vert Émeraude) -->
+                <div class="macro-card">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="ring-fiber" class="circle fiber" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <span class="macro-name">Fibres</span>
+                    <span class="macro-val"><span id="val-fiber">0</span> / <span id="target-fiber">30</span>g</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Actions et Liste du jour (Zone de défilement) -->
+        <section class="day-log-container">
+            <button id="btnOpenAddMeal" class="btn-primary">+ Ajouter un aliment / plat</button>
+            
+            <h3 class="section-title">Consommations du jour</h3>
+            <ul id="todayMealList" class="item-list">
+                <!-- Les aliments ajoutés apparaîtront ici sous forme de liste -->
+            </ul>
+        </section>
+
+    </main>
+
+
+    <!-- ========================================== -->
+    <!-- SECTION 2 : BASE DE DONNÉES (BDD)         -->
+    <!-- ========================================== -->
+    <main id="tab-bdd" class="tab-content">
+        
+        <!-- Sub-header : Switch Aliments / Plats -->
+        <div class="bdd-subnav">
+            <button id="subtab-aliments-btn" class="subnav-btn active" onclick="switchBddSubtab('aliments')">Aliments</button>
+            <button id="subtab-plats-btn" class="subnav-btn" onclick="switchBddSubtab('plats')">Plats Composés</button>
+        </div>
+
+        <!-- Bouton d'ajout selon l'onglet actif -->
+        <div class="bdd-action-bar">
+            <button id="btnAddFood" class="btn-primary" onclick="openModal('modalAddFood')">+ Ajouter un Ingrédient</button>
+            <button id="btnAddRecipe" class="btn-primary hidden" onclick="openModal('modalAddRecipe')">+ Créer un Plat Composé</button>
+        </div>
+
+        <!-- Liste des Aliments -->
+        <div id="subtab-aliments" class="bdd-content active">
+            <ul id="foodBddList" class="item-list">
+                <!-- Ingrédients enregistrés -->
+            </ul>
+        </div>
+
+        <!-- Liste des Plats -->
+        <div id="subtab-plats" class="bdd-content">
+            <ul id="recipeBddList" class="item-list">
+                <!-- Plats enregistrés -->
+            </ul>
+        </div>
+
+    </main>
+
+
+    <!-- ========================================== -->
+    <!-- SECTION 3 : PROFIL & RÉGLAGES             -->
+    <!-- ========================================== -->
+    <main id="tab-profile" class="tab-content">
+        <div class="profile-container">
+            <h2>Mon Profil & Objectifs</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="profAge">Âge</label>
+                    <input type="number" id="profAge" placeholder="ex: 20" required>
+                </div>
+                <div class="form-group">
+                    <label for="profHeight">Taille (cm)</label>
+                    <input type="number" id="profHeight" placeholder="ex: 178" required>
+                </div>
+                <div class="form-group">
+                    <label for="profWeight">Poids actuel (kg)</label>
+                    <input type="number" step="0.1" id="profWeight" placeholder="ex: 70" required>
+                </div>
+                <div class="form-group">
+                    <label for="profGoal">Objectif Physique</label>
+                    <select id="profGoal">
+                        <option value="gain">Prise de masse (+)</option>
+                        <option value="maintain">Maintien</option>
+                        <option value="loss">Sèche / Perte (-)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Enregistrer & Recalculer</button>
+            </form>
+        </div>
+    </main>
+
+
+    <!-- ========================================== -->
+    <!-- MODALES / POP-UPS                          -->
+    <!-- ========================================== -->
+
+    <!-- Modale 1 : Ajouter une consommation au Dashboard -->
+    <div id="modalAddMeal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalAddMeal')">&times;</span>
+            <h3>Ajouter à la journée</h3>
+            <input type="text" id="searchMealInput" placeholder="Rechercher un aliment ou un plat..." class="search-bar">
+            <ul id="searchMealResults" class="item-list selection-list">
+                <!-- Résultats triés par fréquence -->
+            </ul>
+            
+            <div id="portionSelector" class="portion-box hidden">
+                <h4 id="selectedItemName">Nom de l'aliment</h4>
+                <div class="form-group">
+                    <label for="consumedAmount">Quantité consommée (g ou ml) :</label>
+                    <input type="number" id="consumedAmount" value="100">
+                </div>
+                <button id="btnConfirmAddMeal" class="btn-primary">Confirmer l'ajout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale 2 : Créer un Aliment (Pour 100g) -->
+    <div id="modalAddFood" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalAddFood')">&times;</span>
+            <h3>Nouvel Aliment (pour 100g)</h3>
+            <form id="addFoodForm">
+                <input type="text" id="foodName" placeholder="Nom de l'aliment" required>
+                <input type="number" step="0.1" id="foodKcal" placeholder="Calories (kcal)" required>
+                <input type="number" step="0.1" id="foodProtein" placeholder="Protéines (g)" required>
+                <input type="number" step="0.1" id="foodCarbs" placeholder="Glucides (g)" required>
+                <input type="number" step="0.1" id="foodSugar" placeholder="dont Sucres (g)" required>
+                <input type="number" step="0.1" id="foodFat" placeholder="Lipides / Mat. Grasses (g)" required>
+                <input type="number" step="0.1" id="foodFiber" placeholder="Fibres (g - optionnel)" value="0">
+                <button type="submit" class="btn-primary">Sauvegarder dans la BDD</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modale 3 : Confirmation de Suppression -->
+    <div id="modalConfirmDelete" class="modal">
+        <div class="modal-content text-center">
+            <h3>Confirmation</h3>
+            <p id="deleteConfirmText">Voulez-vous vraiment supprimer cet élément ?</p>
+            <div class="modal-actions">
+                <button id="btnCancelDelete" class="btn-secondary" onclick="closeModal('modalConfirmDelete')">Annuler</button>
+                <button id="btnConfirmDeleteAction" class="btn-danger">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- BARRE DE NAVIGATION INFÉRIEURE (FIXE)      -->
+    <!-- ========================================== -->
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="switchTab('tab-bdd', this)">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+            <span>BDD</span>
+        </button>
+        <button class="nav-item active" onclick="switchTab('tab-dashboard', this)">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+            <span>Journal</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-profile', this)">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>Profil</span>
+        </button>
+    </nav>
+
+    <!-- Fichier Script JS principal -->
+    <script src="app.js"></script>
+</body>
+</html>
