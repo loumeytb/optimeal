@@ -71,14 +71,15 @@ body {
 }
 
 /* ==========================================
-   2. BARRE DES MACROS (DEFILEMENT 3 CARTES EN MOBILE)
+   2. BARRE DES MACROS (3 CARTES SUR TOUTE LA LARGEUR + SCROLL)
    ========================================== */
 .macros-scroll-container {
     width: 100%;
     overflow-x: auto;
-    padding-bottom: 10px;
-    margin-bottom: 25px;
+    padding-bottom: 12px;
+    margin-bottom: 30px;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 .macros-scroll-container::-webkit-scrollbar {
@@ -87,30 +88,32 @@ body {
 
 .macros-flex {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     justify-content: flex-start;
     width: max-content;
-    margin: 0 auto;
 }
 
+/* Cartes agrandies : 3 prennent toute la largeur visible */
 .macro-card {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 85px;
-    height: 110px;
+    width: calc((100vw - 64px) / 3); /* Adapte la largeur pour en faire tenir exactement 3 */
+    min-width: 105px;
+    max-width: 130px;
+    height: 125px;
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 10px 6px;
+    border-radius: 14px;
+    padding: 12px 6px;
     flex-shrink: 0;
 }
 
 .wheel-container {
     position: relative;
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     margin-bottom: 8px;
 }
 
@@ -138,29 +141,19 @@ body {
 .orange .circle { stroke: #fb923c; }
 .red .circle { stroke: #f87171; }
 .green .circle { stroke: #4ade80; }
+.purple .circle { stroke: #c084fc; }
 
 .macro-label {
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 600;
     color: #ffffff;
     text-align: center;
 }
 
 .macro-goal {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
     margin-top: 3px;
-}
-
-/* Sur écran mobile : scroll bloqué pour afficher exactement 3 cartes */
-@media (max-width: 480px) {
-    .macros-flex {
-        margin: 0;
-    }
-    .macros-scroll-container {
-        width: 275px; /* (3 x 85px) + (2 x 10px gap) */
-        margin: 0 auto 25px auto;
-    }
 }
 
 /* ==========================================
@@ -185,13 +178,14 @@ body {
 }
 
 /* ==========================================
-   4. SECTION CONSOMMATIONS DU JOUR
+   4. SECTION CONSOMMATIONS DU JOUR (ESPACEMENT AMÉLIORÉ)
    ========================================== */
+.section-title,
 .meal-section-title {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #ffffff;
-    margin: 25px 0 15px 0;
+    margin: 35px 0 20px 0; /* Espacement décollé du bouton et des items */
 }
 
 .item-card {
@@ -199,7 +193,7 @@ body {
     border: 1px solid var(--card-border);
     border-radius: 8px;
     padding: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
