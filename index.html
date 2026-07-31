@@ -8,18 +8,14 @@
 </head>
 <body>
 
-    <!-- Conteneur principal de l'application -->
     <div id="app">
 
-        <!-- ========================================== -->
-        <!-- ONGLET 1 : JOURNAL ( DASHBOARD )           -->
-        <!-- ========================================== -->
+        <!-- ONGLET 1 : JOURNAL -->
         <section id="tab-dashboard" class="tab-content active">
             <header class="header">
                 <h1>Mon Journal</h1>
             </header>
 
-            <!-- Résumé Calories -->
             <div class="card cal-summary-card">
                 <h2>Calories du jour</h2>
                 <div class="cal-display">
@@ -27,7 +23,6 @@
                 </div>
             </div>
 
-            <!-- Les 5 Macro-nutriments (Roues SVG) -->
             <div class="macros-grid">
                 <!-- Protéines -->
                 <div class="macro-card">
@@ -105,19 +100,16 @@
                 </div>
             </div>
 
-            <!-- Journal de la journée (Trié par repas) -->
             <div class="day-log-container card">
                 <button class="btn-primary" onclick="openModal('modal-log')" style="margin-bottom:15px;">+ Consommer un aliment</button>
                 <h2 class="section-title">Consommations du jour</h2>
                 <div id="log-list-container">
-                    <!-- Injection dynamique par repas en JS -->
+                    <!-- Injection dynamique des repas -->
                 </div>
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- ONGLET 2 : BASE DE DONNÉES ( BDD )         -->
-        <!-- ========================================== -->
+        <!-- ONGLET 2 : BASE DE DONNÉES -->
         <section id="tab-bdd" class="tab-content">
             <header class="header">
                 <h1>Base de Données</h1>
@@ -128,22 +120,18 @@
                 <button class="subnav-btn" onclick="switchSubTab('plats')">Plats / Recettes</button>
             </div>
 
-            <!-- Sous-onglet Aliments -->
             <div id="bdd-aliments" class="bdd-content active">
                 <button class="btn-primary" onclick="openModal('modal-food')">+ Créer un aliment</button>
                 <ul id="food-list" class="item-list"></ul>
             </div>
 
-            <!-- Sous-onglet Plats -->
             <div id="bdd-plats" class="bdd-content">
                 <button class="btn-primary" onclick="openModal('modal-recipe')">+ Créer un plat</button>
                 <ul id="recipe-list" class="item-list"></ul>
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- ONGLET 3 : PROFIL                          -->
-        <!-- ========================================== -->
+        <!-- ONGLET 3 : PROFIL -->
         <section id="tab-profile" class="tab-content">
             <header class="header">
                 <h1>Mon Profil</h1>
@@ -189,7 +177,6 @@
                         </select>
                     </div>
 
-                    <!-- Champs dynamiques si Sèche ou Prise de Masse -->
                     <div id="goal-custom-container" style="display: none;">
                         <div class="form-group">
                             <label for="prof-target-weight">Poids visé (kg)</label>
@@ -201,7 +188,6 @@
                         </div>
                     </div>
 
-                    <!-- Indicateur visuel dynamique -->
                     <div id="goal-indicator" style="display: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem;"></div>
 
                     <button type="submit" class="btn-primary">Mettre à jour mes objectifs</button>
@@ -209,59 +195,59 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- NAVIGATION BAS DE PAGE (BOTTOM NAV)        -->
-        <!-- ========================================== -->
+        <!-- NAVIGATION BAS DE PAGE (BOTTOM NAV) avec icônes SVG d'origine -->
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab('tab-dashboard', this)">
-                <span>📓</span>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
                 <span>Journal</span>
             </button>
             <button class="nav-item" onclick="switchTab('tab-bdd', this)">
-                <span>🥑</span>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                </svg>
                 <span>BDD</span>
             </button>
             <button class="nav-item" onclick="switchTab('tab-profile', this)">
-                <span>⚙️</span>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
                 <span>Profil</span>
             </button>
         </nav>
 
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODALES DE SAISIE                         -->
-    <!-- ========================================== -->
-
-    <!-- Modale : Consommer un aliment -->
+    <!-- MODALE : Consommer un aliment -->
     <div id="modal-log" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('modal-log')">&times;</span>
             <h3 class="section-title" style="margin-top:0;">Ajouter au Journal</h3>
             <form id="log-form">
-                <!-- 1. Sélection du Repas -->
                 <div class="form-group">
                     <label for="log-meal-type">Moment de la journée</label>
                     <select id="log-meal-type" required>
-                        <option value="breakfast">🥞 Petit-déjeuner</option>
-                        <option value="lunch">🥗 Déjeuner</option>
-                        <option value="dinner">🍽️ Dîner</option>
-                        <option value="snack">🍏 Grignotage / Collation</option>
+                        <option value="breakfast">Petit-déjeuner</option>
+                        <option value="lunch">Déjeuner</option>
+                        <option value="dinner">Repas du soir</option>
+                        <option value="snack">Grignotage / Collation</option>
                     </select>
                 </div>
 
-                <!-- 2. Recherche et Liste Défilante d'aliments -->
                 <div class="form-group">
                     <label>Choisir l'aliment ou le plat</label>
-                    <input type="text" id="log-search-input" placeholder="🔍 Rechercher un aliment..." oninput="filterLogFoodList()" style="margin-bottom: 8px;">
+                    <input type="text" id="log-search-input" placeholder="🔍 Rechercher..." oninput="filterLogFoodList()" style="margin-bottom: 8px;">
                     
-                    <div id="log-food-picker" class="food-picker-container" style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 4px;">
-                        <!-- Injecté en JS -->
+                    <div id="log-food-picker" style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 4px;">
                     </div>
                     <input type="hidden" id="log-selected-item-id" required>
                 </div>
 
-                <!-- 3. Quantité -->
                 <div class="form-group">
                     <label for="log-amount">Quantité (g ou ml)</label>
                     <input type="number" id="log-amount" value="100" required>
@@ -272,7 +258,7 @@
         </div>
     </div>
 
-    <!-- Modale : Créer un Aliment -->
+    <!-- MODALE : Créer un Aliment -->
     <div id="modal-food" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('modal-food')">&times;</span>
@@ -311,7 +297,7 @@
         </div>
     </div>
 
-    <!-- Modale : Créer un Plat / Recette -->
+    <!-- MODALE : Créer un Plat / Recette -->
     <div id="modal-recipe" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('modal-recipe')">&times;</span>
