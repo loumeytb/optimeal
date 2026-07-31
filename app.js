@@ -525,12 +525,9 @@ function prepareRecipeForm() {
 function addIngredientRow() {
     const container = document.getElementById('recipe-ingredients-container');
     const div = document.createElement('div');
-    div.className = 'recipe-row';
-    div.style.display = 'flex';
-    div.style.gap = '8px';
-    div.style.marginBottom = '8px';
+    div.className = 'recipe-row ingredient-row';
 
-    let selectHTML = '<select class="recipe-food-select" style="flex:2;">';
+    let selectHTML = '<select class="recipe-food-select custom-select">';
     state.foods.forEach(f => {
         selectHTML += `<option value="${f.id}">${f.name}</option>`;
     });
@@ -538,8 +535,8 @@ function addIngredientRow() {
 
     div.innerHTML = `
         ${selectHTML}
-        <input type="number" class="recipe-food-weight" placeholder="g" value="100" style="flex:1;">
-        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--danger-color); font-size:1.2rem; cursor:pointer;">&times;</button>
+        <input type="number" class="recipe-food-weight custom-input" placeholder="g" value="100">
+        <button type="button" class="delete-btn" onclick="this.parentElement.remove()">&times;</button>
     `;
     container.appendChild(div);
 }
