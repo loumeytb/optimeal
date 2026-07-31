@@ -6,7 +6,7 @@ let state = {
     profile: { weight: '', height: '', age: '', gender: 'male', activity: '1.15', goal: 'maintain', targetWeight: '', targetDays: '' },
     foods: [],
     recipes: [],
-    logs: [] // Liste des consommations
+    logs: [] // Liste des consommations avec { itemId, meal, amount, date }
 };
 
 // Fonction utilitaire pour obtenir la date locale au format YYYY-MM-DD
@@ -29,11 +29,11 @@ function loadData() {
     const saved = localStorage.getItem('nutrition_data');
     if (saved) {
         state = JSON.parse(saved);
-        // Retro-compatibilité : si d'anciens logs n'ont pas de date, on leur assigne la date du jour
         if (state.logs) {
             const today = getTodayDateString();
             state.logs.forEach(log => {
                 if (!log.date) log.date = today;
+                if (!log.meal) log.meal = 'snack';
             });
         }
     }
@@ -69,7 +69,7 @@ function switchSubTab(subTabName) {
 }
 
 function openModal(modalId) {
-    if (modalId === 'modal-log') populateLogSelect();
+    if (modalId === 'modal-log') populateLogPicker();
     if (modalId === 'modal-recipe') prepareRecipeForm();
     document.getElementById(modalId).classList.add('active');
 }
@@ -82,7 +82,7 @@ function closeModal(modalId) {
 // 3. LOGIQUE & CALCULS
 // ==========================================
 
-// Calcul du Total Journalier (filtré sur la date d'aujourd'hui)
+// Calcul du Total Journalier (filtré strictement sur la date du jour)
 function calculateDailyTotals() {
     let totals = { calories: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
     const today = getTodayDateString();
@@ -105,7 +105,7 @@ function calculateDailyTotals() {
     return totals;
 }
 
-// Rendu Graphique (Comptoirs et Roues)
+// Rendu Graphique (Comptoirs, Roues et Journal par repas)
 function renderDashboard() {
     const totals = calculateDailyTotals();
     const today = getTodayDateString();
@@ -121,29 +121,67 @@ function renderDashboard() {
     updateMacroCard('fat', totals.fat, state.goals.fat);
     updateMacroCard('fiber', totals.fiber, state.goals.fiber);
 
-    // Rendu de la liste du journal (Seulement pour aujourd'hui)
-    const logList = document.getElementById('log-list');
-    logList.innerHTML = '';
-    
-    state.logs.forEach((log, index) => {
-        if (log.date !== today) return;
+    // Rendu du Journal par Catégories de Repas
+    const container = document.getElementById('log-list-container');
+    container.innerHTML = '';
 
-        let item = state.foods.find(f => f.id === log.itemId) || state.recipes.find(r => r.id === log.itemId);
-        if (!item) return;
+    const meals = [
+        { id: 'breakfast', title: '🥞 Petit-déjeuner' },
+        { id: 'lunch', title: '🥗 Déjeuner' },
+        { id: 'dinner', title: '🍽️ Dîner' },
+        { id: 'snack', title: '🍏 Grignotage / Collation' }
+    ];
 
-        let ratio = log.amount / 100;
-        let cals = Math.round(item.calories * ratio);
+    const todayLogs = state.logs.filter(log => log.date === today);
 
-        let li = document.createElement('li');
-        li.className = 'item-card';
-        li.innerHTML = `
-            <div>
-                <div class="item-title">${item.name}</div>
-                <div class="item-sub">${log.amount}g/ml • ${cals} kcal</div>
+    meals.forEach(meal => {
+        const mealLogs = todayLogs.filter(log => (log.meal || 'snack') === meal.id);
+        
+        let mealCals = 0;
+        mealLogs.forEach(log => {
+            let item = state.foods.find(f => f.id === log.itemId) || state.recipes.find(r => r.id === log.itemId);
+            if (item) mealCals += Math.round(item.calories * (log.amount / 100));
+        });
+
+        const section = document.createElement('div');
+        section.className = 'meal-section';
+        section.style.marginBottom = '15px';
+
+        let itemsHTML = '';
+        if (mealLogs.length === 0) {
+            itemsHTML = `<div style="font-size:0.85rem; color:var(--text-secondary); padding: 5px 0;">Rien pour l'instant</div>`;
+        } else {
+            itemsHTML = '<ul class="item-list">';
+            mealLogs.forEach(log => {
+                let originalIndex = state.logs.indexOf(log);
+                let item = state.foods.find(f => f.id === log.itemId) || state.recipes.find(r => r.id === log.itemId);
+                if (!item) return;
+
+                let ratio = log.amount / 100;
+                let cals = Math.round(item.calories * ratio);
+
+                itemsHTML += `
+                    <li class="item-card" style="margin-bottom:6px;">
+                        <div>
+                            <div class="item-title">${item.name}</div>
+                            <div class="item-sub">${log.amount}g/ml • ${cals} kcal</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteLog(${originalIndex})">&times;</button>
+                    </li>
+                `;
+            });
+            itemsHTML += '</ul>';
+        }
+
+        section.innerHTML = `
+            <div style="display:flex; justify-style:space-between; align-items:center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 8px;">
+                <h3 style="font-size:1rem; margin:0; flex:1;">${meal.title}</h3>
+                <span style="font-size:0.85rem; font-weight:bold; color:var(--text-secondary);">${mealCals} kcal</span>
             </div>
-            <button class="delete-btn" onclick="deleteLog(${index})">&times;</button>
+            ${itemsHTML}
         `;
-        logList.appendChild(li);
+
+        container.appendChild(section);
     });
 }
 
@@ -251,7 +289,6 @@ function updateLiveIndicator() {
 
     indicator.style.display = 'block';
 
-    // Analyse de faisabilité et sécurité
     if (goal === 'bulk') {
         if (deltaKg <= 0) {
             indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
@@ -309,7 +346,6 @@ function renderAll() {
 // 4. ÉVÉNEMENTS & FORMULAIRES
 // ==========================================
 function setupEventListeners() {
-    // Écouteurs pour la mise à jour dynamique de l'indicateur
     ['prof-weight', 'prof-height', 'prof-age', 'prof-gender', 'prof-activity', 'prof-target-weight', 'prof-target-days'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -332,7 +368,6 @@ function setupEventListeners() {
 
         state.profile = { weight, height, age, gender, activity, goal, targetWeight, targetDays };
 
-        // Calcul BMR & TDEE
         if (weight && height && age) {
             let bmr = (10 * weight) + (6.25 * height) - (5 * age);
             bmr += (gender === 'male') ? 5 : -161;
@@ -348,16 +383,14 @@ function setupEventListeners() {
 
             state.goals.calories = Math.round(targetCal);
 
-            // Répartition conseillée des Macros
             let proteinMultiplier = (goal === 'cut') ? 2.2 : 2.0;
             state.goals.protein = Math.round(weight * proteinMultiplier);
-            state.goals.fat = Math.round(weight * 0.9); // 0.9g/kg
+            state.goals.fat = Math.round(weight * 0.9);
             
-            // Complément direct en glucides
             let remainingCal = state.goals.calories - (state.goals.protein * 4) - (state.goals.fat * 9);
             state.goals.carb = Math.max(0, Math.round(remainingCal / 4));
-            state.goals.sugar = Math.round(state.goals.calories * 0.10 / 4); // max 10% des calories
-            state.goals.fiber = 30; // standard
+            state.goals.sugar = Math.round(state.goals.calories * 0.10 / 4);
+            state.goals.fiber = 30;
         }
 
         saveData();
@@ -384,20 +417,31 @@ function setupEventListeners() {
         document.getElementById('food-form').reset();
     });
 
-    // Log Form (Ajout de la date)
+    // Log Form (Ajout Repas + Date)
     document.getElementById('log-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        const itemId = document.getElementById('log-select').value;
+        const itemId = document.getElementById('log-selected-item-id').value;
+        const meal = document.getElementById('log-meal-type').value;
         const amount = parseFloat(document.getElementById('log-amount').value) || 0;
+
+        if (!itemId) {
+            alert('Veuillez sélectionner un aliment dans la liste.');
+            return;
+        }
 
         if (itemId && amount > 0) {
             state.logs.push({ 
                 itemId, 
+                meal,
                 amount,
-                date: getTodayDateString() // Sauvegarde la date du jour
+                date: getTodayDateString()
             });
             saveData();
             closeModal('modal-log');
+            
+            // Réinitialiser la modale
+            document.getElementById('log-selected-item-id').value = '';
+            document.getElementById('log-search-input').value = '';
         }
     });
 
@@ -429,7 +473,6 @@ function setupEventListeners() {
 
         if (totalWeight === 0) return;
 
-        // Normalisation pour 100g du plat final
         let ratio100g = 100 / totalWeight;
         const recipe = {
             id: 'r_' + Date.now(),
@@ -450,29 +493,61 @@ function setupEventListeners() {
 }
 
 // ==========================================
-// 5. HELPER FUNCTIONS
+// 5. HELPER FUNCTIONS & PICKER DE RECHERCHE
 // ==========================================
-function populateLogSelect() {
-    const select = document.getElementById('log-select');
-    select.innerHTML = '';
 
-    if (state.foods.length > 0) {
-        let group = document.createElement('optgroup');
-        group.label = 'Aliments';
-        state.foods.forEach(f => {
-            group.innerHTML += `<option value="${f.id}">${f.name} (${f.calories} kcal/100g)</option>`;
-        });
-        select.appendChild(group);
+// Construit la liste d'aliments personnalisée et défilante
+function populateLogPicker() {
+    document.getElementById('log-search-input').value = '';
+    document.getElementById('log-selected-item-id').value = '';
+    renderFoodPickerList(state.foods, state.recipes);
+}
+
+function renderFoodPickerList(foods, recipes) {
+    const picker = document.getElementById('log-food-picker');
+    picker.innerHTML = '';
+
+    const allItems = [
+        ...foods.map(f => ({ ...f, type: 'Aliment' })),
+        ...recipes.map(r => ({ ...r, type: 'Plat' }))
+    ];
+
+    if (allItems.length === 0) {
+        picker.innerHTML = '<div style="padding:10px; font-size:0.85rem; color:var(--text-secondary); text-align:center;">Aucun aliment/plat enregistré dans la BDD.</div>';
+        return;
     }
 
-    if (state.recipes.length > 0) {
-        let group = document.createElement('optgroup');
-        group.label = 'Plats';
-        state.recipes.forEach(r => {
-            group.innerHTML += `<option value="${r.id}">${r.name} (${r.calories} kcal/100g)</option>`;
-        });
-        select.appendChild(group);
-    }
+    allItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'picker-item';
+        div.style.cssText = 'padding: 8px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 4px;';
+        
+        div.innerHTML = `
+            <div>
+                <strong style="font-size:0.9rem;">${item.name}</strong> 
+                <span style="font-size:0.75rem; color:var(--text-secondary); font-style:italic;">(${item.type})</span>
+            </div>
+            <span style="font-size:0.85rem; color:var(--primary-color); font-weight:bold;">${item.calories} kcal/100g</span>
+        `;
+
+        div.onclick = () => {
+            document.querySelectorAll('.picker-item').forEach(el => el.style.backgroundColor = 'transparent');
+            div.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
+            document.getElementById('log-selected-item-id').value = item.id;
+        };
+
+        picker.appendChild(div);
+    });
+}
+
+// Filtrage en direct avec la barre de recherche
+function filterLogFoodList() {
+    const query = document.getElementById('log-search-input').value.toLowerCase();
+    
+    const filteredFoods = state.foods.filter(f => f.name.toLowerCase().includes(query));
+    const filteredRecipes = state.recipes.filter(r => r.name.toLowerCase().includes(query));
+
+    renderFoodPickerList(filteredFoods, filteredRecipes);
 }
 
 function prepareRecipeForm() {
@@ -498,7 +573,7 @@ function addIngredientRow() {
     div.innerHTML = `
         ${selectHTML}
         <input type="number" class="recipe-food-weight" placeholder="g" value="100" style="flex:1;">
-        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--danger-color); font-size:1.2rem;">&times;</button>
+        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:var(--danger-color); font-size:1.2rem; cursor:pointer;">&times;</button>
     `;
     container.appendChild(div);
 }
