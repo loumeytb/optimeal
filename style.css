@@ -253,10 +253,10 @@ body {
     background: transparent;
     border: none;
     color: var(--danger-red);
-    font-size: 1.5rem;
-    font-weight: 400;
+    font-size: 1.4rem;
+    font-weight: 600;
     line-height: 1;
-    padding: 4px 10px;
+    padding: 4px 8px;
     cursor: pointer;
     border-radius: 6px;
     transition: background-color 0.15s ease;
@@ -296,7 +296,7 @@ body {
 }
 
 /* ==========================================
-   6. NAVIGATION DU BAS & MODALES
+   6. NAVIGATION DU BAS & MODALES (FIX DU STYLE BLANC PAR DÉFAUT)
    ========================================== */
 .bottom-nav {
     position: fixed;
@@ -381,21 +381,43 @@ body {
     margin-bottom: 6px;
 }
 
+/* Force les fonds sombres et désactive le style blanc imposé par iOS / Android / Chrome */
 .form-group input, 
-.form-group select {
-    width: 100%;
-    padding: 10px 12px;
-    background-color: var(--bg-color);
-    border: 1px solid var(--card-border);
+.form-group select,
+.custom-select,
+.custom-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: var(--bg-color) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--card-border) !important;
     border-radius: 8px;
-    color: var(--text-primary);
+    padding: 10px 12px;
     font-size: 0.9rem;
     outline: none;
 }
 
+/* Fleche personnalisée pour remplacer le rendu blanc du navigateur */
+select.custom-select,
+.form-group select {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%238e94a0' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    background-size: 18px !important;
+    padding-right: 28px !important;
+}
+
 /* ==========================================
-   7. LIGNES D'INGRÉDIENTS (RECETTES)
+   7. LIGNES D'INGRÉDIENTS (STABILISATION POUR ÉVITER LES DÉPASSEMENTS)
    ========================================== */
+#recipe-ingredients-container {
+    margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
 .ingredient-row {
     display: flex;
     align-items: center;
@@ -404,34 +426,19 @@ body {
     width: 100%;
 }
 
-.custom-select {
-    flex: 1;
+.ingredient-row .custom-select {
+    flex: 1 1 auto;
     min-width: 0;
-    padding: 10px;
-    background-color: var(--bg-color);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 0.88rem;
-    outline: none;
 }
 
-.custom-input {
-    width: 75px !important;
-    flex-shrink: 0;
-    padding: 10px 8px;
-    background-color: var(--bg-color);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 0.88rem;
+.ingredient-row .custom-input {
+    width: 65px !important;
+    min-width: 65px !important;
+    max-width: 65px !important;
+    flex: 0 0 65px;
     text-align: center;
-    outline: none;
 }
 
-#recipe-ingredients-container {
-    margin-bottom: 15px;
-    max-height: 200px;
-    overflow-y: auto;
-    padding-right: 2px;
+.ingredient-row .delete-btn {
+    flex: 0 0 auto;
 }
