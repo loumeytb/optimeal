@@ -18,9 +18,13 @@
 
             <!-- CARTE CENTRALE CALORIES ET NUTRITION -->
             <div class="card cal-summary-card">
-                <h2>Calories du jour</h2>
-                <div class="cal-display">
-                    <span id="calories-val">0</span> / <span id="calories-goal">2000</span> <small>kcal</small>
+                
+                <!-- Compteur de Calories (Gros et Blanc) -->
+                <div class="main-calorie-counter">
+                    <h2>Calories du jour</h2>
+                    <div class="cal-display">
+                        <span id="calories-val">0</span> / <span id="calories-goal">2000</span> <small>kcal</small>
+                    </div>
                 </div>
 
                 <!-- CARROUSEL / DEFILEMENT HORIZONTAL DES MACROS -->
@@ -105,10 +109,10 @@
             </div>
 
             <div class="day-log-container card">
-                <button class="btn-primary" onclick="openModal('modal-log')" style="margin-bottom:15px;">+ Consommer un aliment</button>
+                <button class="btn-primary spacing-bottom" onclick="openModal('modal-log')">+ Consommer un aliment</button>
                 <h2 class="section-title">Consommations du jour</h2>
                 <div id="log-list-container">
-                    <!-- Injection dynamique des repas -->
+                    <!-- Injection dynamique des repas (SANS EMOJIS, géré par JS) -->
                 </div>
             </div>
         </section>
@@ -119,18 +123,18 @@
                 <h1>Base de Données</h1>
             </header>
 
-            <div class="subnav">
+            <div class="subnav spacing-bottom-large">
                 <button class="subnav-btn active" onclick="switchSubTab('aliments')">Aliments</button>
                 <button class="subnav-btn" onclick="switchSubTab('plats')">Plats / Recettes</button>
             </div>
 
             <div id="bdd-aliments" class="bdd-content active">
-                <button class="btn-primary" onclick="openModal('modal-food')">+ Créer un aliment</button>
+                <button class="btn-primary spacing-bottom" onclick="openModal('modal-food')">+ Créer un aliment</button>
                 <ul id="food-list" class="item-list"></ul>
             </div>
 
             <div id="bdd-plats" class="bdd-content">
-                <button class="btn-primary" onclick="openModal('modal-recipe')">+ Créer un plat</button>
+                <button class="btn-primary spacing-bottom" onclick="openModal('modal-recipe')">+ Créer un plat</button>
                 <ul id="recipe-list" class="item-list"></ul>
             </div>
         </section>
@@ -235,11 +239,12 @@
             <form id="log-form">
                 <div class="form-group">
                     <label for="log-meal-type">Moment de la journée</label>
+                    <!-- Textes épurés, sans emojis -->
                     <select id="log-meal-type" required>
                         <option value="breakfast">Petit-déjeuner</option>
                         <option value="lunch">Déjeuner</option>
                         <option value="dinner">Repas du soir</option>
-                        <option value="snack">Grignotage / Collation</option>
+                        <option value="snack">Collation</option>
                     </select>
                 </div>
 
@@ -315,7 +320,7 @@
                 <label style="display:block; margin-bottom:8px;">Ingrédients</label>
                 <div id="recipe-ingredients-container"></div>
 
-                <button type="button" class="btn-primary" onclick="addIngredientRow()" style="background:#34495e; margin-bottom:15px;">+ Ajouter un ingrédient</button>
+                <button type="button" class="btn-primary spacing-bottom" onclick="addIngredientRow()" style="background:#34495e;">+ Ajouter un ingrédient</button>
 
                 <button type="submit" class="btn-primary">Calculer et Sauvegarder le Plat</button>
             </form>
