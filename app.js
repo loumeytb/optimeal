@@ -1,15 +1,11 @@
-// ==========================================
-// 1. ÉTAT DE L'APPLICATION (STORAGE)
-// ==========================================
 let state = {
     goals: { calories: 2000, protein: 150, carb: 250, sugar: 50, fat: 70, fiber: 30 },
     profile: { weight: '', height: '', age: '', gender: 'male', activity: '1.15', goal: 'maintain', targetWeight: '', targetDays: '' },
     foods: [],
     recipes: [],
-    logs: [] // Liste des consommations avec { itemId, meal, amount, date }
+    logs: []
 };
 
-// Fonction utilitaire pour obtenir la date locale au format YYYY-MM-DD
 function getTodayDateString() {
     const today = new Date();
     const year = today.getFullYear();
@@ -18,7 +14,6 @@ function getTodayDateString() {
     return `${year}-${month}-${day}`;
 }
 
-// Initialisation au chargement
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     renderAll();
@@ -44,9 +39,6 @@ function saveData() {
     renderAll();
 }
 
-// ==========================================
-// 2. GESTION DES NAVIGATION / ONGLETS
-// ==========================================
 function switchTab(tabId, btnElement) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
@@ -78,11 +70,6 @@ function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
 
-// ==========================================
-// 3. LOGIQUE & CALCULS
-// ==========================================
-
-// Calcul du Total Journalier (filtré strictement sur la date du jour)
 function calculateDailyTotals() {
     let totals = { calories: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
     const today = getTodayDateString();
@@ -105,31 +92,27 @@ function calculateDailyTotals() {
     return totals;
 }
 
-// Rendu Graphique (Comptoirs, Roues et Journal par repas)
 function renderDashboard() {
     const totals = calculateDailyTotals();
     const today = getTodayDateString();
 
-    // Affichage des Calories
     document.getElementById('calories-val').textContent = Math.round(totals.calories);
     document.getElementById('calories-goal').textContent = Math.round(state.goals.calories);
 
-    // Mettre à jour les 5 roues
     updateMacroCard('protein', totals.protein, state.goals.protein);
     updateMacroCard('carb', totals.carb, state.goals.carb);
     updateMacroCard('sugar', totals.sugar, state.goals.sugar);
     updateMacroCard('fat', totals.fat, state.goals.fat);
     updateMacroCard('fiber', totals.fiber, state.goals.fiber);
 
-    // Rendu du Journal par Catégories de Repas
     const container = document.getElementById('log-list-container');
     container.innerHTML = '';
 
     const meals = [
-        { id: 'breakfast', title: '🥞 Petit-déjeuner' },
-        { id: 'lunch', title: '🥗 Déjeuner' },
-        { id: 'dinner', title: '🍽️ Dîner' },
-        { id: 'snack', title: '🍏 Grignotage / Collation' }
+        { id: 'breakfast', title: 'Petit-déjeuner' },
+        { id: 'lunch', title: 'Déjeuner' },
+        { id: 'dinner', title: 'Repas du soir' },
+        { id: 'snack', title: 'Grignotage / Collation' }
     ];
 
     const todayLogs = state.logs.filter(log => log.date === today);
@@ -149,7 +132,7 @@ function renderDashboard() {
 
         let itemsHTML = '';
         if (mealLogs.length === 0) {
-            itemsHTML = `<div style="font-size:0.85rem; color:var(--text-secondary); padding: 5px 0;">Rien pour l'instant</div>`;
+            itemsHTML = `<div style="font-size:0.85rem; color:var(--text-secondary); padding: 4px 0;">Rien pour l'instant</div>`;
         } else {
             itemsHTML = '<ul class="item-list">';
             mealLogs.forEach(log => {
@@ -174,8 +157,8 @@ function renderDashboard() {
         }
 
         section.innerHTML = `
-            <div style="display:flex; justify-style:space-between; align-items:center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 8px;">
-                <h3 style="font-size:1rem; margin:0; flex:1;">${meal.title}</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 8px;">
+                <h3 style="font-size:0.95rem; margin:0; flex:1;">${meal.title}</h3>
                 <span style="font-size:0.85rem; font-weight:bold; color:var(--text-secondary);">${mealCals} kcal</span>
             </div>
             ${itemsHTML}
@@ -196,7 +179,6 @@ function updateMacroCard(type, value, goal) {
     }
 }
 
-// Rendu BDD (Aliments & Plats)
 function renderBDD() {
     const foodList = document.getElementById('food-list');
     foodList.innerHTML = '';
@@ -229,7 +211,6 @@ function renderBDD() {
     });
 }
 
-// Rendu du Profil & Gestion des Champs Dynamiques
 function renderProfile() {
     if (!state.profile) return;
     document.getElementById('prof-weight').value = state.profile.weight || '';
@@ -278,7 +259,6 @@ function updateLiveIndicator() {
         return;
     }
 
-    // Calcul BMR & TDEE
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
     bmr += (gender === 'male') ? 5 : -161;
     let tdee = bmr * activity;
@@ -299,17 +279,17 @@ function updateLiveIndicator() {
             indicator.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
             indicator.style.border = '1px solid #2ECC71';
             indicator.style.color = '#2ECC71';
-            indicator.innerHTML = `✅ <b>Objectif optimal !</b> Surplus de +${Math.round(deltaCalDaily)} kcal/jour (~${(deltaKg / (targetDays / 7)).toFixed(2)} kg/semaine). Prise de muscle propre.`;
+            indicator.innerHTML = `✅ <b>Objectif optimal !</b> Surplus de +${Math.round(deltaCalDaily)} kcal/jour.`;
         } else if (deltaCalDaily <= 700) {
             indicator.style.backgroundColor = 'rgba(241, 196, 15, 0.2)';
             indicator.style.border = '1px solid #F1C40F';
             indicator.style.color = '#F1C40F';
-            indicator.innerHTML = `⚠️ <b>Attention :</b> Surplus élevé de +${Math.round(deltaCalDaily)} kcal/jour (~${(deltaKg / (targetDays / 7)).toFixed(2)} kg/semaine). Risque de prise de gras associée.`;
+            indicator.innerHTML = `⚠️ Surplus élevé de +${Math.round(deltaCalDaily)} kcal/jour.`;
         } else {
             indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
             indicator.style.border = '1px solid #E74C3C';
             indicator.style.color = '#E74C3C';
-            indicator.innerHTML = `🚨 <b>Objectif irréaliste :</b> Surplus de +${Math.round(deltaCalDaily)} kcal/jour. Prise de gras massive assurée. Allongez la durée en jours.`;
+            indicator.innerHTML = `🚨 Surplus irréaliste de +${Math.round(deltaCalDaily)} kcal/jour.`;
         }
     } else if (goal === 'cut') {
         if (deltaKg >= 0) {
@@ -321,17 +301,17 @@ function updateLiveIndicator() {
             indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
             indicator.style.border = '1px solid #E74C3C';
             indicator.style.color = '#E74C3C';
-            indicator.innerHTML = `🚨 <b>Danger santé :</b> Le total (${Math.round(targetCal)} kcal) est sous votre métabolisme de base (${Math.round(bmr)} kcal). Risque fort de fatigue et perte musculaire. Augmentez la durée.`;
+            indicator.innerHTML = `🚨 Sous votre métabolisme de base (${Math.round(bmr)} kcal).`;
         } else if (Math.abs(deltaCalDaily) <= 700) {
             indicator.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
             indicator.style.border = '1px solid #2ECC71';
             indicator.style.color = '#2ECC71';
-            indicator.innerHTML = `✅ <b>Perte saine !</b> Déficit de ${Math.round(deltaCalDaily)} kcal/jour (~${Math.abs(deltaKg / (targetDays / 7)).toFixed(2)} kg/semaine). Masse musculaire préservée.`;
+            indicator.innerHTML = `✅ Déficit de ${Math.round(deltaCalDaily)} kcal/jour.`;
         } else {
             indicator.style.backgroundColor = 'rgba(241, 196, 15, 0.2)';
             indicator.style.border = '1px solid #F1C40F';
             indicator.style.color = '#F1C40F';
-            indicator.innerHTML = `⚠️ <b>Sèche très agressive :</b> Déficit de ${Math.round(deltaCalDaily)} kcal/jour. Attention à la fatigue et à la perte de muscle.`;
+            indicator.innerHTML = `⚠️ Sèche très agressive : Déficit de ${Math.round(deltaCalDaily)} kcal/jour.`;
         }
     }
 }
@@ -342,9 +322,6 @@ function renderAll() {
     renderProfile();
 }
 
-// ==========================================
-// 4. ÉVÉNEMENTS & FORMULAIRES
-// ==========================================
 function setupEventListeners() {
     ['prof-weight', 'prof-height', 'prof-age', 'prof-gender', 'prof-activity', 'prof-target-weight', 'prof-target-days'].forEach(id => {
         const el = document.getElementById(id);
@@ -354,7 +331,6 @@ function setupEventListeners() {
         }
     });
 
-    // Profil Form
     document.getElementById('profile-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const weight = parseFloat(document.getElementById('prof-weight').value);
@@ -394,10 +370,9 @@ function setupEventListeners() {
         }
 
         saveData();
-        alert('Profil et objectifs mis à jour !');
+        alert('Profil mis à jour !');
     });
 
-    // Food Form
     document.getElementById('food-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const food = {
@@ -417,7 +392,6 @@ function setupEventListeners() {
         document.getElementById('food-form').reset();
     });
 
-    // Log Form (Ajout Repas + Date)
     document.getElementById('log-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const itemId = document.getElementById('log-selected-item-id').value;
@@ -425,7 +399,7 @@ function setupEventListeners() {
         const amount = parseFloat(document.getElementById('log-amount').value) || 0;
 
         if (!itemId) {
-            alert('Veuillez sélectionner un aliment dans la liste.');
+            alert('Veuillez choisir un aliment dans la liste.');
             return;
         }
 
@@ -439,13 +413,11 @@ function setupEventListeners() {
             saveData();
             closeModal('modal-log');
             
-            // Réinitialiser la modale
             document.getElementById('log-selected-item-id').value = '';
             document.getElementById('log-search-input').value = '';
         }
     });
 
-    // Recipe Form
     document.getElementById('recipe-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.getElementById('recipe-name').value;
@@ -492,11 +464,6 @@ function setupEventListeners() {
     });
 }
 
-// ==========================================
-// 5. HELPER FUNCTIONS & PICKER DE RECHERCHE
-// ==========================================
-
-// Construit la liste d'aliments personnalisée et défilante
 function populateLogPicker() {
     document.getElementById('log-search-input').value = '';
     document.getElementById('log-selected-item-id').value = '';
@@ -513,21 +480,21 @@ function renderFoodPickerList(foods, recipes) {
     ];
 
     if (allItems.length === 0) {
-        picker.innerHTML = '<div style="padding:10px; font-size:0.85rem; color:var(--text-secondary); text-align:center;">Aucun aliment/plat enregistré dans la BDD.</div>';
+        picker.innerHTML = '<div style="padding:8px; font-size:0.85rem; color:var(--text-secondary); text-align:center;">Aucun aliment enregistré.</div>';
         return;
     }
 
     allItems.forEach(item => {
         const div = document.createElement('div');
         div.className = 'picker-item';
-        div.style.cssText = 'padding: 8px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 4px;';
+        div.style.cssText = 'padding: 6px 8px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 4px;';
         
         div.innerHTML = `
             <div>
-                <strong style="font-size:0.9rem;">${item.name}</strong> 
-                <span style="font-size:0.75rem; color:var(--text-secondary); font-style:italic;">(${item.type})</span>
+                <strong style="font-size:0.85rem;">${item.name}</strong> 
+                <span style="font-size:0.75rem; color:var(--text-secondary);">(${item.type})</span>
             </div>
-            <span style="font-size:0.85rem; color:var(--primary-color); font-weight:bold;">${item.calories} kcal/100g</span>
+            <span style="font-size:0.8rem; color:var(--primary-color);">${item.calories} kcal/100g</span>
         `;
 
         div.onclick = () => {
@@ -540,7 +507,6 @@ function renderFoodPickerList(foods, recipes) {
     });
 }
 
-// Filtrage en direct avec la barre de recherche
 function filterLogFoodList() {
     const query = document.getElementById('log-search-input').value.toLowerCase();
     
