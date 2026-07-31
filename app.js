@@ -274,44 +274,44 @@ function updateLiveIndicator() {
             indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
             indicator.style.border = '1px solid #E74C3C';
             indicator.style.color = '#E74C3C';
-            indicator.innerHTML = '⚠️ Pour une prise de masse, votre poids cible doit être supérieur à votre poids actuel.';
+            indicator.innerHTML = 'Pour une prise de masse, votre poids cible doit être supérieur à votre poids actuel.';
         } else if (deltaCalDaily <= 500) {
             indicator.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
             indicator.style.border = '1px solid #2ECC71';
             indicator.style.color = '#2ECC71';
-            indicator.innerHTML = `✅ <b>Objectif optimal !</b> Surplus de +${Math.round(deltaCalDaily)} kcal/jour.`;
+            indicator.innerHTML = `Objectif optimal : Surplus de +${Math.round(deltaCalDaily)} kcal/jour.`;
         } else if (deltaCalDaily <= 700) {
             indicator.style.backgroundColor = 'rgba(241, 196, 15, 0.2)';
             indicator.style.border = '1px solid #F1C40F';
             indicator.style.color = '#F1C40F';
-            indicator.innerHTML = `⚠️ Surplus élevé de +${Math.round(deltaCalDaily)} kcal/jour.`;
+            indicator.innerHTML = `Surplus élevé de +${Math.round(deltaCalDaily)} kcal/jour.`;
         } else {
             indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
             indicator.style.border = '1px solid #E74C3C';
             indicator.style.color = '#E74C3C';
-            indicator.innerHTML = `🚨 Surplus irréaliste de +${Math.round(deltaCalDaily)} kcal/jour.`;
+            indicator.innerHTML = `Surplus très élevé de +${Math.round(deltaCalDaily)} kcal/jour.`;
         }
     } else if (goal === 'cut') {
         if (deltaKg >= 0) {
             indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
             indicator.style.border = '1px solid #E74C3C';
             indicator.style.color = '#E74C3C';
-            indicator.innerHTML = '⚠️ Pour une perte de poids, votre poids cible doit être inférieur à votre poids actuel.';
+            indicator.innerHTML = 'Pour une perte de poids, votre poids cible doit être inférieur à votre poids actuel.';
         } else if (targetCal < bmr) {
             indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.2)';
             indicator.style.border = '1px solid #E74C3C';
             indicator.style.color = '#E74C3C';
-            indicator.innerHTML = `🚨 Sous votre métabolisme de base (${Math.round(bmr)} kcal).`;
+            indicator.innerHTML = `Sous votre métabolisme de base (${Math.round(bmr)} kcal).`;
         } else if (Math.abs(deltaCalDaily) <= 700) {
             indicator.style.backgroundColor = 'rgba(46, 204, 113, 0.2)';
             indicator.style.border = '1px solid #2ECC71';
             indicator.style.color = '#2ECC71';
-            indicator.innerHTML = `✅ Déficit de ${Math.round(deltaCalDaily)} kcal/jour.`;
+            indicator.innerHTML = `Déficit de ${Math.round(deltaCalDaily)} kcal/jour.`;
         } else {
             indicator.style.backgroundColor = 'rgba(241, 196, 15, 0.2)';
             indicator.style.border = '1px solid #F1C40F';
             indicator.style.color = '#F1C40F';
-            indicator.innerHTML = `⚠️ Sèche très agressive : Déficit de ${Math.round(deltaCalDaily)} kcal/jour.`;
+            indicator.innerHTML = `Sèche très agressive : Déficit de ${Math.round(deltaCalDaily)} kcal/jour.`;
         }
     }
 }
