@@ -16,87 +16,91 @@
                 <h1>Mon Journal</h1>
             </header>
 
+            <!-- CARTE CENTRALE CALORIES ET NUTRITION -->
             <div class="card cal-summary-card">
                 <h2>Calories du jour</h2>
                 <div class="cal-display">
                     <span id="calories-val">0</span> / <span id="calories-goal">2000</span> <small>kcal</small>
                 </div>
-            </div>
 
-            <div class="macros-grid">
-                <!-- Protéines -->
-                <div class="macro-card">
-                    <div class="wheel-container">
-                        <svg viewBox="0 0 36 36" class="circular-chart green">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path id="circle-protein" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div class="wheel-text">
-                            <span id="val-protein">0</span>g
+                <!-- CARROUSEL / DEFILEMENT HORIZONTAL DES MACROS -->
+                <div class="macros-scroll-container">
+                    <div class="macros-flex">
+                        <!-- Protéines -->
+                        <div class="macro-card">
+                            <div class="wheel-container">
+                                <svg viewBox="0 0 36 36" class="circular-chart green">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path id="circle-protein" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="wheel-text">
+                                    <span id="val-protein">0</span>g
+                                </div>
+                            </div>
+                            <span class="macro-label">Protéines</span>
+                            <span class="macro-goal"><span id="goal-protein">0</span>g</span>
+                        </div>
+
+                        <!-- Glucides -->
+                        <div class="macro-card">
+                            <div class="wheel-container">
+                                <svg viewBox="0 0 36 36" class="circular-chart blue">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path id="circle-carb" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="wheel-text">
+                                    <span id="val-carb">0</span>g
+                                </div>
+                            </div>
+                            <span class="macro-label">Glucides</span>
+                            <span class="macro-goal"><span id="goal-carb">0</span>g</span>
+                        </div>
+
+                        <!-- Sucres -->
+                        <div class="macro-card">
+                            <div class="wheel-container">
+                                <svg viewBox="0 0 36 36" class="circular-chart yellow">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path id="circle-sugar" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="wheel-text">
+                                    <span id="val-sugar">0</span>g
+                                </div>
+                            </div>
+                            <span class="macro-label">Sucres</span>
+                            <span class="macro-goal"><span id="goal-sugar">0</span>g</span>
+                        </div>
+
+                        <!-- Lipides -->
+                        <div class="macro-card">
+                            <div class="wheel-container">
+                                <svg viewBox="0 0 36 36" class="circular-chart orange">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path id="circle-fat" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="wheel-text">
+                                    <span id="val-fat">0</span>g
+                                </div>
+                            </div>
+                            <span class="macro-label">Lipides</span>
+                            <span class="macro-goal"><span id="goal-fat">0</span>g</span>
+                        </div>
+
+                        <!-- Fibres -->
+                        <div class="macro-card">
+                            <div class="wheel-container">
+                                <svg viewBox="0 0 36 36" class="circular-chart purple">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path id="circle-fiber" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="wheel-text">
+                                    <span id="val-fiber">0</span>g
+                                </div>
+                            </div>
+                            <span class="macro-label">Fibres</span>
+                            <span class="macro-goal"><span id="goal-fiber">0</span>g</span>
                         </div>
                     </div>
-                    <span class="macro-label">Protéines</span>
-                    <span class="macro-goal"><span id="goal-protein">0</span>g</span>
-                </div>
-
-                <!-- Glucides -->
-                <div class="macro-card">
-                    <div class="wheel-container">
-                        <svg viewBox="0 0 36 36" class="circular-chart blue">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path id="circle-carb" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div class="wheel-text">
-                            <span id="val-carb">0</span>g
-                        </div>
-                    </div>
-                    <span class="macro-label">Glucides</span>
-                    <span class="macro-goal"><span id="goal-carb">0</span>g</span>
-                </div>
-
-                <!-- Sucres -->
-                <div class="macro-card">
-                    <div class="wheel-container">
-                        <svg viewBox="0 0 36 36" class="circular-chart yellow">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path id="circle-sugar" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div class="wheel-text">
-                            <span id="val-sugar">0</span>g
-                        </div>
-                    </div>
-                    <span class="macro-label">Sucres</span>
-                    <span class="macro-goal"><span id="goal-sugar">0</span>g</span>
-                </div>
-
-                <!-- Lipides -->
-                <div class="macro-card">
-                    <div class="wheel-container">
-                        <svg viewBox="0 0 36 36" class="circular-chart orange">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path id="circle-fat" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div class="wheel-text">
-                            <span id="val-fat">0</span>g
-                        </div>
-                    </div>
-                    <span class="macro-label">Lipides</span>
-                    <span class="macro-goal"><span id="goal-fat">0</span>g</span>
-                </div>
-
-                <!-- Fibres -->
-                <div class="macro-card">
-                    <div class="wheel-container">
-                        <svg viewBox="0 0 36 36" class="circular-chart purple">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path id="circle-fiber" class="circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div class="wheel-text">
-                            <span id="val-fiber">0</span>g
-                        </div>
-                    </div>
-                    <span class="macro-label">Fibres</span>
-                    <span class="macro-goal"><span id="goal-fiber">0</span>g</span>
                 </div>
             </div>
 
@@ -195,7 +199,7 @@
             </div>
         </section>
 
-        <!-- NAVIGATION BAS DE PAGE (BOTTOM NAV) avec icônes SVG d'origine -->
+        <!-- NAVIGATION BAS DE PAGE (BOTTOM NAV) AVEC ICÔNES SVG -->
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab('tab-dashboard', this)">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -241,7 +245,7 @@
 
                 <div class="form-group">
                     <label>Choisir l'aliment ou le plat</label>
-                    <input type="text" id="log-search-input" placeholder="🔍 Rechercher..." oninput="filterLogFoodList()" style="margin-bottom: 8px;">
+                    <input type="text" id="log-search-input" placeholder="Rechercher un aliment..." oninput="filterLogFoodList()" style="margin-bottom: 8px;">
                     
                     <div id="log-food-picker" style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 4px;">
                     </div>
