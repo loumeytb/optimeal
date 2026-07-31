@@ -2,12 +2,12 @@
     --bg-color: #121316;
     --card-bg: #1a1c22;
     --card-border: #252830;
+    --border-color: #252830;
     --text-primary: #ffffff;
     --text-secondary: #8e94a0;
     --primary-blue: #4c72a0;
     --primary-blue-hover: #3d5e85;
     --danger-red: #ef4444;
-    --danger-red-hover: #dc2626;
 }
 
 * {
@@ -26,7 +26,7 @@ body {
 #app {
     width: 100%;
     min-height: 100vh;
-    padding-bottom: 70px;
+    padding-bottom: 80px;
     background-color: var(--bg-color);
 }
 
@@ -40,11 +40,11 @@ body {
 }
 
 /* ==========================================
-   1. EN-TÊTE CALORIES
+   1. EN-TÊTE CALORIES & CARTE PRINCIPALE
    ========================================== */
 .cal-summary-card {
     text-align: center;
-    margin: 20px 0 30px 0;
+    margin: 15px 0 30px 0;
 }
 
 .main-calorie-counter h2 {
@@ -52,7 +52,7 @@ body {
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     font-weight: 500;
 }
 
@@ -60,10 +60,7 @@ body {
     font-size: 2.8rem;
     font-weight: 800;
     color: #ffffff;
-}
-
-.cal-display #calories-val {
-    color: #ffffff;
+    margin-bottom: 25px;
 }
 
 .cal-display small {
@@ -73,13 +70,12 @@ body {
 }
 
 /* ==========================================
-   2. BARRE DES MACROS (CORRECTION DU CHEVAUCHEMENT)
+   2. CARROUSEL MACROS (3 Cartes pleine largeur)
    ========================================== */
 .macros-scroll-container {
     width: 100%;
     overflow-x: auto;
-    padding-bottom: 15px;
-    margin-bottom: 35px;
+    padding-bottom: 10px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
 }
@@ -99,25 +95,24 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    /* Calcul pour que 3 cartes prennent exactement 100% de la largeur disponible */
     width: calc((100vw - 64px) / 3);
-    min-width: 110px;
-    height: 145px;
+    min-width: 105px;
+    height: 140px;
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 16px;
-    padding: 12px 6px;
+    padding: 10px 4px;
     flex-shrink: 0;
 }
 
-/* Anneau SVG + valeur en gramme centrée DEDANS */
+/* Le conteneur du cercle SVG */
 .wheel-container {
     position: relative;
-    width: 54px;
-    height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 8px;
 }
 
 .circular-chart {
@@ -138,7 +133,7 @@ body {
     stroke-linecap: round;
 }
 
-/* Couleurs des anneaux */
+/* Couleurs des anneaux SVG */
 .blue .circle { stroke: #38bdf8; }
 .yellow .circle { stroke: #facc15; }
 .orange .circle { stroke: #fb923c; }
@@ -146,7 +141,7 @@ body {
 .green .circle { stroke: #4ade80; }
 .purple .circle { stroke: #c084fc; }
 
-/* Texte au centre du cercle */
+/* RECALAGE EN ABSOLU : la valeur s'affiche PAR-DESSUS le centre du cercle */
 .wheel-text {
     position: absolute;
     top: 50%;
@@ -159,60 +154,32 @@ body {
     white-space: nowrap;
 }
 
-/* Titre et objectif SOUS le cercle */
+/* Titre (ex: Protéines) et Objectif (ex: 150g) en dessous */
 .macro-label {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: #ffffff;
     text-align: center;
     line-height: 1.1;
-    margin-top: 4px;
 }
 
 .macro-goal {
     font-size: 0.68rem;
     color: var(--text-secondary);
-    margin-top: 2px;
+    margin-top: 3px;
 }
 
 /* ==========================================
-   3. BOUTONS GENERAUX ET BDD
+   3. BASE DE DONNÉES & BOUTONS SUBNAV
    ========================================== */
-.btn-primary {
-    width: 100%;
-    padding: 14px;
-    background-color: var(--primary-blue);
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-
-.btn-primary:hover,
-.btn-primary:active {
-    background-color: var(--primary-blue-hover);
-}
-
-.spacing-bottom {
-    margin-bottom: 20px !important;
-}
-
-.spacing-bottom-large {
-    margin-bottom: 25px !important;
-}
-
-/* En-tête de la page BDD */
 .header h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     color: var(--text-primary);
 }
 
-/* Barre de navigation interne BDD (Subnav) */
+/* Barre supérieure d'onglets Aliments / Plats */
 .subnav {
     display: flex;
     background-color: var(--card-bg);
@@ -224,12 +191,12 @@ body {
 
 .subnav-btn {
     flex: 1;
-    padding: 10px 14px;
+    padding: 12px 14px;
     background: transparent;
     border: none;
     border-radius: 7px;
     color: var(--text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -241,11 +208,6 @@ body {
     color: #ffffff;
 }
 
-.subnav-btn:hover:not(.active) {
-    color: var(--text-primary);
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
 .bdd-content {
     display: none;
 }
@@ -255,55 +217,30 @@ body {
 }
 
 /* ==========================================
-   4. LISTES & BOUTON SUPPRIMER ROUGE
+   4. LISTES D'ÉLÉMENTS & ESPACEMENTS
    ========================================== */
-.item-list {
-    list-style: none;
-    margin-top: 15px;
+.spacing-bottom {
+    margin-bottom: 20px !important;
 }
 
-.item-list li,
+.spacing-bottom-large {
+    margin-bottom: 30px !important;
+}
+
+.item-list {
+    list-style: none;
+    margin-top: 15px; /* Espace net sous le bouton d'ajout */
+}
+
 .item-card {
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: 12px 14px;
+    border-radius: 10px;
+    padding: 14px;
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-/* Style de la croix de suppression en ROUGE */
-.btn-delete,
-.delete-btn {
-    background: transparent;
-    border: none;
-    color: var(--danger-red);
-    font-size: 1.3rem;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    line-height: 1;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.btn-delete:hover,
-.delete-btn:hover {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: var(--danger-red-hover);
-}
-
-/* ==========================================
-   5. SECTION CONSOMMATIONS DU JOUR
-   ========================================== */
-.section-title,
-.meal-section-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 35px 0 20px 0;
 }
 
 .item-title {
@@ -318,8 +255,55 @@ body {
     margin-top: 4px;
 }
 
+/* FIXATION DE LA CROIX DE SUPPRESSION (ROUGE & SANS RECTANGLE BLANC) */
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger-red);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.delete-btn:hover,
+.delete-btn:active {
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
 /* ==========================================
-   6. NAVIGATION EN BAS (BOTTOM NAV)
+   5. BOUTONS GENERAUX & TITRES DE SECTIONS
+   ========================================== */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-blue);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:active {
+    background-color: var(--primary-blue-hover);
+}
+
+.section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 35px 0 20px 0;
+}
+
+/* ==========================================
+   6. NAVIGATION DU BAS (BOTTOM NAV)
    ========================================== */
 .bottom-nav {
     position: fixed;
@@ -342,7 +326,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     cursor: pointer;
     width: 33%;
 }
@@ -352,8 +336,8 @@ body {
 }
 
 .nav-icon {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     margin-bottom: 3px;
 }
 
@@ -365,7 +349,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.85);
     z-index: 1000;
     justify-content: center;
     align-items: center;
@@ -379,8 +363,8 @@ body {
     background-color: var(--card-bg);
     width: 90%;
     max-width: 400px;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 14px;
+    padding: 22px;
     position: relative;
     border: 1px solid var(--card-border);
 }
@@ -389,29 +373,29 @@ body {
     position: absolute;
     top: 12px;
     right: 16px;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     cursor: pointer;
     color: var(--text-secondary);
 }
 
 .form-group {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .form-group label {
     display: block;
     font-size: 0.8rem;
     color: var(--text-secondary);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .form-group input, 
 .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 10px 12px;
     background-color: var(--bg-color);
     border: 1px solid var(--card-border);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--text-primary);
     font-size: 0.9rem;
     outline: none;
