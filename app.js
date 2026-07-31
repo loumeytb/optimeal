@@ -6,8 +6,17 @@ let state = {
     profile: { weight: '', height: '', age: '', gender: 'male', activity: '1.15', goal: 'maintain', targetWeight: '', targetDays: '' },
     foods: [],
     recipes: [],
-    logs: [] // Liste des consommations de la journée
+    logs: [] // Liste des consommations
 };
+
+// Fonction utilitaire pour obtenir la date locale au format YYYY-MM-DD
+function getTodayDateString() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
 // Initialisation au chargement
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,6 +29,13 @@ function loadData() {
     const saved = localStorage.getItem('nutrition_data');
     if (saved) {
         state = JSON.parse(saved);
+        // Retro-compatibilité : si d'anciens logs n'ont pas de date, on leur assigne la date du jour
+        if (state.logs) {
+            const today = getTodayDateString();
+            state.logs.forEach(log => {
+                if (!log.date) log.date = today;
+            });
+        }
     }
 }
 
@@ -66,11 +82,14 @@ function closeModal(modalId) {
 // 3. LOGIQUE & CALCULS
 // ==========================================
 
-// Calcul du Total Journalier
+// Calcul du Total Journalier (filtré sur la date d'aujourd'hui)
 function calculateDailyTotals() {
     let totals = { calories: 0, protein: 0, carb: 0, sugar: 0, fat: 0, fiber: 0 };
+    const today = getTodayDateString();
 
-    state.logs.forEach(log => {
+    const todayLogs = state.logs.filter(log => log.date === today);
+
+    todayLogs.forEach(log => {
         let item = state.foods.find(f => f.id === log.itemId) || state.recipes.find(r => r.id === log.itemId);
         if (item) {
             let ratio = log.amount / 100;
@@ -89,6 +108,7 @@ function calculateDailyTotals() {
 // Rendu Graphique (Comptoirs et Roues)
 function renderDashboard() {
     const totals = calculateDailyTotals();
+    const today = getTodayDateString();
 
     // Affichage des Calories
     document.getElementById('calories-val').textContent = Math.round(totals.calories);
@@ -101,10 +121,13 @@ function renderDashboard() {
     updateMacroCard('fat', totals.fat, state.goals.fat);
     updateMacroCard('fiber', totals.fiber, state.goals.fiber);
 
-    // Rendu de la liste du journal
+    // Rendu de la liste du journal (Seulement pour aujourd'hui)
     const logList = document.getElementById('log-list');
     logList.innerHTML = '';
+    
     state.logs.forEach((log, index) => {
+        if (log.date !== today) return;
+
         let item = state.foods.find(f => f.id === log.itemId) || state.recipes.find(r => r.id === log.itemId);
         if (!item) return;
 
@@ -361,14 +384,18 @@ function setupEventListeners() {
         document.getElementById('food-form').reset();
     });
 
-    // Log Form
+    // Log Form (Ajout de la date)
     document.getElementById('log-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const itemId = document.getElementById('log-select').value;
         const amount = parseFloat(document.getElementById('log-amount').value) || 0;
 
         if (itemId && amount > 0) {
-            state.logs.push({ itemId, amount });
+            state.logs.push({ 
+                itemId, 
+                amount,
+                date: getTodayDateString() // Sauvegarde la date du jour
+            });
             saveData();
             closeModal('modal-log');
         }
