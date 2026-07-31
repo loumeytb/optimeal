@@ -6,6 +6,8 @@
     --text-secondary: #8e94a0;
     --primary-blue: #4c72a0;
     --primary-blue-hover: #3d5e85;
+    --danger-red: #ef4444;
+    --danger-red-hover: #dc2626;
 }
 
 * {
@@ -42,7 +44,7 @@ body {
    ========================================== */
 .cal-summary-card {
     text-align: center;
-    margin: 25px 0 35px 0;
+    margin: 20px 0 30px 0;
 }
 
 .main-calorie-counter h2 {
@@ -71,7 +73,7 @@ body {
 }
 
 /* ==========================================
-   2. BARRE DES MACROS (3 CARTES PLEINE LARGEUR + SCROLL)
+   2. BARRE DES MACROS (CORRECTION DU CHEVAUCHEMENT)
    ========================================== */
 .macros-scroll-container {
     width: 100%;
@@ -97,7 +99,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     width: calc((100vw - 64px) / 3);
     min-width: 110px;
     height: 145px;
@@ -108,11 +110,14 @@ body {
     flex-shrink: 0;
 }
 
+/* Anneau SVG + valeur en gramme centrée DEDANS */
 .wheel-container {
     position: relative;
-    width: 48px;
-    height: 48px;
-    margin-bottom: 8px;
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .circular-chart {
@@ -141,48 +146,45 @@ body {
 .green .circle { stroke: #4ade80; }
 .purple .circle { stroke: #c084fc; }
 
+/* Texte au centre du cercle */
+.wheel-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* Titre et objectif SOUS le cercle */
 .macro-label {
     font-size: 0.8rem;
     font-weight: 600;
     color: #ffffff;
     text-align: center;
     line-height: 1.1;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-/* Structure verticale des valeurs pour éviter les chevauchements */
-.macro-values {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.macro-current {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #ffffff;
+    margin-top: 4px;
 }
 
 .macro-goal {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     color: var(--text-secondary);
+    margin-top: 2px;
 }
 
 /* ==========================================
-   3. BOUTON + CONSOMMER UN ALIMENT
+   3. BOUTONS GENERAUX ET BDD
    ========================================== */
 .btn-primary {
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     background-color: var(--primary-blue);
     color: #ffffff;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
@@ -194,22 +196,33 @@ body {
     background-color: var(--primary-blue-hover);
 }
 
-/* ==========================================
-   4. BDD - BOUTONS DE BASCULEMENT (TOGGLE)
-   ========================================== */
-.toggle-container,
-.bdd-toggle-container {
+.spacing-bottom {
+    margin-bottom: 20px !important;
+}
+
+.spacing-bottom-large {
+    margin-bottom: 25px !important;
+}
+
+/* En-tête de la page BDD */
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+/* Barre de navigation interne BDD (Subnav) */
+.subnav {
     display: flex;
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 10px;
     padding: 4px;
-    margin-bottom: 20px;
     gap: 4px;
 }
 
-.toggle-btn,
-.bdd-toggle-btn {
+.subnav-btn {
     flex: 1;
     padding: 10px 14px;
     background: transparent;
@@ -223,16 +236,63 @@ body {
     text-align: center;
 }
 
-.toggle-btn.active,
-.bdd-toggle-btn.active {
+.subnav-btn.active {
     background-color: var(--primary-blue);
     color: #ffffff;
 }
 
-.toggle-btn:hover:not(.active),
-.bdd-toggle-btn:hover:not(.active) {
+.subnav-btn:hover:not(.active) {
     color: var(--text-primary);
     background-color: rgba(255, 255, 255, 0.05);
+}
+
+.bdd-content {
+    display: none;
+}
+
+.bdd-content.active {
+    display: block;
+}
+
+/* ==========================================
+   4. LISTES & BOUTON SUPPRIMER ROUGE
+   ========================================== */
+.item-list {
+    list-style: none;
+    margin-top: 15px;
+}
+
+.item-list li,
+.item-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Style de la croix de suppression en ROUGE */
+.btn-delete,
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger-red);
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-delete:hover,
+.delete-btn:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger-red-hover);
 }
 
 /* ==========================================
@@ -243,18 +303,7 @@ body {
     font-size: 1.15rem;
     font-weight: 700;
     color: #ffffff;
-    margin: 45px 0 25px 0;
-}
-
-.item-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    margin: 35px 0 20px 0;
 }
 
 .item-title {
@@ -270,7 +319,7 @@ body {
 }
 
 /* ==========================================
-   6. NAVIGATION EN BAS
+   6. NAVIGATION EN BAS (BOTTOM NAV)
    ========================================== */
 .bottom-nav {
     position: fixed;
@@ -331,7 +380,7 @@ body {
     width: 90%;
     max-width: 400px;
     border-radius: 12px;
-    padding: 22px;
+    padding: 20px;
     position: relative;
     border: 1px solid var(--card-border);
 }
@@ -346,14 +395,14 @@ body {
 }
 
 .form-group {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .form-group label {
     display: block;
     font-size: 0.8rem;
     color: var(--text-secondary);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .form-group input, 
