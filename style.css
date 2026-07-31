@@ -28,7 +28,7 @@ body {
     width: 100%;
     max-width: 480px;
     min-height: 100vh;
-    padding-bottom: 70px;
+    padding-bottom: 75px;
     position: relative;
     background-color: var(--bg-color);
 }
@@ -52,7 +52,7 @@ body {
     display: block;
 }
 
-/* CARDS */
+/* CARDS ET ESPACEMENTS */
 .card {
     background-color: var(--card-bg);
     border-radius: 12px;
@@ -61,22 +61,35 @@ body {
     border: 1px solid var(--border-color);
 }
 
-/* EN-TÊTE CALORIES & MACROS DÉFILANTES */
+.spacing-bottom {
+    margin-bottom: 14px;
+}
+
+.spacing-bottom-large {
+    margin-bottom: 20px;
+}
+
+/* EN-TÊTE CALORIES */
 .cal-summary-card {
     text-align: center;
 }
 
-.cal-summary-card h2 {
-    font-size: 0.9rem;
+.main-calorie-counter h2 {
+    font-size: 0.85rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .cal-display {
-    font-size: 2rem;
-    font-weight: bold;
-    margin: 10px 0 15px 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff; /* Mis en valeur en blanc intense */
+    margin: 6px 0 18px 0;
+}
+
+.cal-display #calories-val {
+    color: #ffffff;
 }
 
 .cal-display small {
@@ -85,43 +98,51 @@ body {
     font-weight: normal;
 }
 
-/* BARRE / ROUES DES MACROS DÉFILABLE HORIZONTALEMENT */
+/* BARRE DES MACROS : DÉFILEMENT HORIZONTAL (3 VISIBLES) */
 .macros-scroll-container {
-    width: 100%;
+    width: 249px; /* Affiche exactement 3 items (3 x 75px + 2 x 12px de gap) */
+    margin: 0 auto;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
+    scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Cache la barre sous Firefox */
+}
+
+.macros-scroll-container::-webkit-scrollbar {
+    display: none; /* Cache la barre sous Chrome/Safari */
 }
 
 .macros-flex {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     width: max-content;
-    margin: 0 auto;
 }
 
 .macro-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 65px;
+    width: 75px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
 }
 
 .wheel-container {
     position: relative;
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
 }
 
 .circular-chart {
     display: block;
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .circle-bg {
     fill: none;
-    stroke: #333;
+    stroke: #2a2a2a;
     stroke-width: 3.8;
 }
 
@@ -143,13 +164,15 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: bold;
+    color: #ffffff;
 }
 
 .macro-label {
     font-size: 0.75rem;
     margin-top: 6px;
+    font-weight: 500;
 }
 
 .macro-goal {
@@ -162,7 +185,6 @@ body {
     display: flex;
     gap: 8px;
     margin-top: 10px;
-    margin-bottom: 16px;
 }
 
 .subnav-btn {
@@ -174,6 +196,7 @@ body {
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .subnav-btn.active {
@@ -202,18 +225,22 @@ body {
     font-size: 0.95rem;
     font-weight: bold;
     cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.btn-primary:active {
+    opacity: 0.85;
 }
 
 .item-list {
     list-style: none;
-    margin-top: 12px;
 }
 
 .item-card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 10px;
+    padding: 12px;
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
@@ -228,7 +255,7 @@ body {
 .item-sub {
     font-size: 0.75rem;
     color: var(--text-secondary);
-    margin-top: 2px;
+    margin-top: 3px;
 }
 
 .delete-btn {
@@ -252,7 +279,8 @@ body {
     margin-bottom: 4px;
 }
 
-.form-group input, .form-group select {
+.form-group input, 
+.form-group select {
     width: 100%;
     padding: 10px;
     background-color: var(--bg-color);
@@ -260,6 +288,30 @@ body {
     border-radius: 6px;
     color: var(--text-primary);
     font-size: 0.9rem;
+    outline: none;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    border-color: var(--primary-color);
+}
+
+/* PICKER D'ALIMENTS DANS LES MODALES */
+.picker-item {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.picker-item:last-child {
+    border-bottom: none;
+}
+
+.picker-item:hover,
+.picker-item.selected {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: var(--primary-color);
 }
 
 /* NAVIGATION BAS DE PAGE */
@@ -309,7 +361,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.75);
     z-index: 100;
     justify-content: center;
     align-items: center;
