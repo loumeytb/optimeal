@@ -70,7 +70,7 @@ body {
 }
 
 /* ==========================================
-   2. CARROUSEL MACROS (3 Cartes pleine largeur)
+   2. CARROUSEL MACROS
    ========================================== */
 .macros-scroll-container {
     width: 100%;
@@ -96,7 +96,6 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* Calcul pour que 3 cartes prennent exactement 100% de la largeur disponible */
     width: calc((100vw - 64px) / 3);
     min-width: 105px;
     height: 140px;
@@ -107,7 +106,6 @@ body {
     flex-shrink: 0;
 }
 
-/* Le conteneur du cercle SVG */
 .wheel-container {
     position: relative;
     width: 50px;
@@ -133,7 +131,6 @@ body {
     stroke-linecap: round;
 }
 
-/* Couleurs des anneaux SVG */
 .blue .circle { stroke: #38bdf8; }
 .yellow .circle { stroke: #facc15; }
 .orange .circle { stroke: #fb923c; }
@@ -141,7 +138,6 @@ body {
 .green .circle { stroke: #4ade80; }
 .purple .circle { stroke: #c084fc; }
 
-/* RECALAGE EN ABSOLU : la valeur s'affiche PAR-DESSUS le centre du cercle */
 .wheel-text {
     position: absolute;
     top: 50%;
@@ -154,7 +150,6 @@ body {
     white-space: nowrap;
 }
 
-/* Titre (ex: Protéines) et Objectif (ex: 150g) en dessous */
 .macro-label {
     font-size: 0.78rem;
     font-weight: 600;
@@ -179,7 +174,6 @@ body {
     color: var(--text-primary);
 }
 
-/* Barre supérieure d'onglets Aliments / Plats */
 .subnav {
     display: flex;
     background-color: var(--card-bg);
@@ -229,7 +223,7 @@ body {
 
 .item-list {
     list-style: none;
-    margin-top: 15px; /* Espace net sous le bouton d'ajout */
+    margin-top: 15px;
 }
 
 .item-card {
@@ -255,7 +249,6 @@ body {
     margin-top: 4px;
 }
 
-/* FIXATION DE LA CROIX DE SUPPRESSION (ROUGE & SANS RECTANGLE BLANC) */
 .delete-btn {
     background: transparent;
     border: none;
@@ -275,7 +268,7 @@ body {
 }
 
 /* ==========================================
-   5. BOUTONS GENERAUX & TITRES DE SECTIONS
+   5. BOUTONS GENERAUX & TITRES
    ========================================== */
 .btn-primary {
     width: 100%;
@@ -303,7 +296,7 @@ body {
 }
 
 /* ==========================================
-   6. NAVIGATION DU BAS (BOTTOM NAV)
+   6. NAVIGATION DU BAS & MODALES
    ========================================== */
 .bottom-nav {
     position: fixed;
@@ -341,7 +334,6 @@ body {
     margin-bottom: 3px;
 }
 
-/* MODALES & FORMULAIRES */
 .modal {
     display: none;
     position: fixed;
@@ -399,4 +391,47 @@ body {
     color: var(--text-primary);
     font-size: 0.9rem;
     outline: none;
+}
+
+/* ==========================================
+   7. LIGNES D'INGRÉDIENTS (RECETTES)
+   ========================================== */
+.ingredient-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.custom-select {
+    flex: 1;
+    min-width: 0;
+    padding: 10px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    outline: none;
+}
+
+.custom-input {
+    width: 75px !important;
+    flex-shrink: 0;
+    padding: 10px 8px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    text-align: center;
+    outline: none;
+}
+
+#recipe-ingredients-container {
+    margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 2px;
 }
